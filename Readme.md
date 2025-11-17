@@ -9,6 +9,16 @@
 ![Flask](https://img.shields.io/badge/flask-3.0+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+
+
+
+
+
+https://github.com/user-attachments/assets/64d74306-d17d-482e-8aa1-2f77601bfff7
+
+
+
+
 </div>
 
 
@@ -50,13 +60,7 @@
 - **Descarga de tracks**: Guarda canciones de tu playlist
 - **Organización automática**: Mantiene todo en la carpeta `downloads/`
 
----
 
-## 🖼️ Capturas de Pantalla
-
-<img width="1015" height="698" alt="image" src="https://github.com/user-attachments/assets/ed2f093a-6fe6-4b3a-8bc0-f3f07df7eef4" />
-
----
 
 ## 🔧 Requisitos
 
