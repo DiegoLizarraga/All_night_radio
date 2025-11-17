@@ -805,4 +805,4 @@ updateThemeColors('electronic');
 renderPlaylist();
 renderDownloads();
 
-console.log('🎵 MEGA PLAYER 2000 iniciado correctamente! 🎵');
+console.log('🎵 iniciado correctamente! 🎵');
