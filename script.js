@@ -9,6 +9,174 @@ let youtubePlayer = null;
 let currentVideoId = null;
 let downloads = [];
 
+// Variables para GIFs
+let gifs = [];
+let currentGifIndex = 0;
+let gifDisplay = document.getElementById('gif-display');
+let currentGif = document.getElementById('current-gif');
+let gifPlaceholder = document.getElementById('gif-placeholder');
+let gifTitle = document.getElementById('gif-title');
+let gifList = document.getElementById('gif-list');
+let prevGifBtn = document.getElementById('prev-gif-btn');
+let nextGifBtn = document.getElementById('next-gif-btn');
+let randomGifBtn = document.getElementById('random-gif-btn');
+let gifTvContainer = document.querySelector('.gif-tv-container');
+
+// 🔥 AQUÍ AGREGA TUS GIFS - Solo edita esta lista 🔥
+const gifUrls = [
+    {
+        name: 'gato',
+        url: 'https://th.bing.com/th/id/R.7ca94c0ab58daa52cc8ca8adc6539ee4?rik=CHJN%2fbgbK0WNWg&pid=ImgRaw&r=0'
+    },
+    {
+        name: '2 gatos',
+        url: 'https://giphy.com/gifs/SGAh7OmkAtJHQvtzb8'
+    },
+    {
+        name: 'ritmo rojo',
+        url: 'https://bombrushcyberfunk.wiki.gg/images/thumb/Red_Idle.gif/256px-Red_Idle.gif'
+    },
+    {
+        name: 'ritmo azul',
+        url: 'https://bombrushcyberfunk.wiki.gg/images/thumb/Bel_Idle.gif/256px-Bel_Idle.gif'
+    },
+    {
+        name: 'gum',
+        url: 'https://64.media.tumblr.com/8ee57945253145d69297afa4c532e498/tumblr_p8ekvmJPtu1xq94wqo1_540.gif'
+    },
+    // 👇 Agrega más GIFs aquí siguiendo el mismo formato:
+    // {
+    //     name: 'Nombre del GIF',
+    //     url: 'URL-del-gif-aqui'
+    // }
+];
+
+// Cargar GIFs al iniciar
+function loadGifs() {
+    // Convertir URLs al formato interno
+    gifs = gifUrls.map((gif, index) => ({
+        id: index,
+        name: gif.name,
+        url: gif.url,
+        preview: gif.url // Usar el mismo GIF como preview
+    }));
+    
+    renderGifList();
+    if (gifs.length > 0) {
+        showGif(0);
+    }
+}
+
+// Renderizar la lista de GIFs
+function renderGifList() {
+    if (gifs.length === 0) {
+        gifList.innerHTML = '<p class="empty-playlist">No GIFs loaded... Add URLs to the gifUrls array! 🎬</p>';
+        return;
+    }
+    
+    gifList.innerHTML = gifs.map((gif, index) => `
+        <div class="gif-item glass ${currentGifIndex === index ? 'active' : ''}" data-index="${index}">
+            <div class="gif-info">
+                <span class="gif-icon">🎬</span>
+                <div>
+                    <div class="gif-name">${gif.name}</div>
+                </div>
+            </div>
+            <img src="${gif.url}" alt="${gif.name}" class="gif-preview" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSJ1cmwoI2dyYWRpZW50MCkiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMTAgMTJWNy41TDEyLjUgMTBIMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMTAgMTJWNy41TDEyLjUgMTBIMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQwIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I0ZGODM0MjtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMkI2QTdDO3N0b3Atb3BhY2l0eToxIiAvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg=='">
+        </div>
+    `).join('');
+    
+    // Añadir event listeners a cada item
+    document.querySelectorAll('.gif-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.dataset.index);
+            showGif(index);
+        });
+    });
+}
+
+// Mostrar un GIF específico
+function showGif(index) {
+    if (gifs.length === 0) return;
+    
+    // Asegurarse de que el índice esté dentro del rango
+    currentGifIndex = (index + gifs.length) % gifs.length;
+    const gif = gifs[currentGifIndex];
+    
+    // Ocultar placeholder y mostrar GIF
+    gifPlaceholder.style.display = 'none';
+    currentGif.style.display = 'block';
+    currentGif.src = gif.url;
+    
+    // Actualizar título
+    gifTitle.textContent = gif.name;
+    gifTitle.style.display = 'block';
+    
+    // Actualizar la lista para mostrar el activo
+    renderGifList();
+    
+    // Anunciar el cambio si DJ está activado
+    if (djEnabled) {
+        speakDJ(`GIF cambiado a ${gif.name}`);
+    }
+}
+
+// Event listeners para controles de GIF
+prevGifBtn.addEventListener('click', () => {
+    showGif(currentGifIndex - 1);
+});
+
+nextGifBtn.addEventListener('click', () => {
+    showGif(currentGifIndex + 1);
+});
+
+randomGifBtn.addEventListener('click', () => {
+    const randomIndex = Math.floor(Math.random() * gifs.length);
+    showGif(randomIndex);
+});
+
+// Modificar la función updateShapes para hacer que el marco del GIF baile con la música
+function updateShapes(bass, mid, treble) {
+    try {
+        // Escalar formas según los bajos
+        const bassScale = 1 + (bass / 255) * 0.5;
+        shape1.style.transform = `scale(${bassScale})`;
+        shape2.style.transform = `scale(${1 + (mid / 255) * 0.3})}`;
+        shape3.style.transform = `scale(${1 + (treble / 255) * 0.4})}`;
+        
+        // Cambiar opacidad según el audio
+        shape1.style.opacity = 0.15 + (bass / 255) * 0.35;
+        shape2.style.opacity = 0.15 + (mid / 255) * 0.35;
+        shape3.style.opacity = 0.15 + (treble / 255) * 0.35;
+        
+        // Cambiar colores según el género y el audio
+        const colors = genres[currentGenre].colors;
+        const bassIntensity = bass / 255;
+        const midIntensity = mid / 255;
+        const trebleIntensity = treble / 255;
+        
+        shape1.style.background = interpolateColor(colors[0], colors[1], bassIntensity);
+        shape2.style.background = interpolateColor(colors[1], colors[2], midIntensity);
+        shape3.style.background = interpolateColor(colors[2], colors[0], trebleIntensity);
+        
+        // Hacer que el marco del GIF baile con la música
+        if (bass > 180) {
+            gifTvContainer.classList.add('dancing');
+            // Cambiar el color del borde según el género
+            const color = interpolateColor(colors[0], colors[1], bassIntensity);
+            gifTvContainer.style.borderColor = color;
+            gifTvContainer.style.boxShadow = `0 0 ${30 + bass/5}px ${color}`;
+        } else {
+            gifTvContainer.classList.remove('dancing');
+            gifTvContainer.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            gifTvContainer.style.boxShadow = '0 0 30px rgba(255, 140, 66, 0.3)';
+        }
+    } catch (error) {
+        console.error('Error updating shapes:', error);
+    }
+}
+
 // Variables para visualización de audio
 let audioContext = null;
 let analyser = null;
@@ -800,9 +968,13 @@ progressContainer.addEventListener('click', (e) => {
     audio.currentTime = percent * audio.duration;
 });
 
+
+
+
 // Inicializar
 updateThemeColors('electronic');
 renderPlaylist();
 renderDownloads();
+loadGifs();
 
 console.log('🎵 iniciado correctamente! 🎵');

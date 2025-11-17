@@ -302,10 +302,11 @@
             position: relative;
         }
 
-        /* YouTube Video Container */
-        .video-container {
+        /* GIF TV Container - Modificado para ajustarse a las dimensiones del GIF */
+        .gif-tv-container {
             width: 100%;
-            aspect-ratio: 16/9;
+            max-width: 100%;
+            /* Eliminado aspect-ratio fijo para permitir dimensiones dinámicas */
             border-radius: 1rem;
             overflow: hidden;
             position: relative;
@@ -313,30 +314,171 @@
             border: 2px solid rgba(255, 255, 255, 0.1);
             background: rgba(0, 0, 0, 0.5);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
             min-height: 200px;
+            transition: all 0.5s ease;
         }
 
-        .video-placeholder {
+        .gif-display {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            /* Añadido para mantener proporciones */
+            width: 100%;
+            height: 300px; /* Altura inicial por defecto */
+        }
+
+        #current-gif {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Cambiado a 'contain' para no recortar */
+            background: #000; /* Fondo negro para espacios vacíos */
+            transition: all 0.5s ease;
+        }
+
+        .gif-placeholder {
             text-align: center;
             padding: 2rem;
             color: rgba(255, 255, 255, 0.6);
         }
 
-        .video-placeholder i {
+        .gif-placeholder i {
             font-size: 3rem;
             margin-bottom: 1rem;
             color: rgba(255, 140, 66, 0.6);
         }
 
-        #youtube-player {
+        .gif-controls {
+            display: flex;
+            justify-content: center;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .gif-nav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 50%;
+            color: #fff;
+            transition: all 0.3s ease;
+            margin: 0 0.75rem;
+        }
+
+        .gif-nav-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Animación para el marco que reacciona a la música */
+        .gif-tv-container.dancing {
+            animation: tv-dance 0.5s infinite alternate;
+        }
+
+        @keyframes tv-dance {
+            0% { 
+                transform: scale(1) rotate(0deg); 
+                box-shadow: 0 0 30px rgba(255, 140, 66, 0.3);
+            }
+            50% { 
+                transform: scale(1.01) rotate(0.2deg); 
+                box-shadow: 0 0 40px rgba(255, 140, 66, 0.5);
+            }
+            100% { 
+                transform: scale(1.02) rotate(-0.2deg); 
+                box-shadow: 0 0 50px rgba(255, 140, 66, 0.7);
+            }
+        }
+
+        /* GIF Playlist Container */
+        .gif-playlist-container {
             width: 100%;
-            height: 100%;
+            margin-top: 1rem;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .gif-playlist-container h3 {
+            text-align: center;
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Bungee', cursive;
+        }
+
+        .gif-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .gif-item {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gif-item::before {
+            content: '';
             position: absolute;
             top: 0;
-            left: 0;
-            border-radius: 1rem;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .gif-item:hover::before {
+            left: 100%;
+        }
+
+        .gif-item:hover {
+            transform: scale(1.02);
+        }
+
+        .gif-item.active {
+            border: 2px solid #FF8C42;
+            box-shadow: 0 0 20px rgba(255, 140, 66, 0.5);
+        }
+
+        .gif-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .gif-icon {
+            font-size: 1.2rem;
+            color: #C5D633;
+        }
+
+        .gif-name {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .gif-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.25rem;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .video-title {
@@ -867,6 +1009,10 @@
             .play-btn {
                 padding: 1rem;
             }
+            
+            .gif-display {
+                height: 250px; /* Altura reducida para móviles */
+            }
         }
     </style>
 </head>
@@ -964,13 +1110,34 @@
                 </div>
             </div>
 
-            <!-- Video Section -->
+            <!-- GIF TV Section -->
             <div class="video-section">
-                <div class="video-container glass">
-                    <div id="youtube-player"></div>
-                    <div id="video-placeholder" class="video-placeholder">
-                        <i class="material-icons">smart_display</i>
-                        <p>YouTube videos will appear here</p>
+                <div class="gif-tv-container glass">
+                    <div id="gif-display" class="gif-display">
+                        <img id="current-gif" src="" alt="GIF Display" style="display: none;">
+                        <div id="gif-placeholder" class="gif-placeholder">
+                            <i class="material-icons">tv</i>
+                            <p>GIF animations will appear here</p>
+                        </div>
+                    </div>
+                    <div class="gif-controls">
+                        <button id="prev-gif-btn" class="gif-nav-btn glass">
+                            <i class="material-icons">skip_previous</i>
+                        </button>
+                        <button id="next-gif-btn" class="gif-nav-btn glass">
+                            <i class="material-icons">skip_next</i>
+                        </button>
+                        <button id="random-gif-btn" class="gif-nav-btn glass">
+                            <i class="material-icons">shuffle</i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- GIF Playlist -->
+                <div class="gif-playlist-container glass">
+                    <h3 class="neon-text">★ GIF PLAYLIST ★</h3>
+                    <div id="gif-list" class="gif-list">
+                        <p class="empty-playlist">No GIFs loaded yet... Add some GIFs to the 'gifs' folder! 🎬</p>
                     </div>
                 </div>
                 
@@ -989,7 +1156,7 @@
                             </button>
                         </div>
                     </div>
-                    <div id="lyrics-content" class="layers-content">
+                    <div id="lyrics-content" class="lyrics-content">
                         <p class="lyrics-content preview">Selecciona una canción para ver su letra</p>
                     </div>
                     <div class="lyrics-status">
@@ -998,8 +1165,8 @@
                     </div>
                 </div>
                 
-                <div id="video-title" class="video-title" style="display: none;">
-                    No video loaded
+                <div id="gif-title" class="video-title" style="display: none;">
+                    No GIF loaded
                 </div>
             </div>
         </div>
@@ -1039,6 +1206,52 @@
         let animationId = null;
         let canvas = null;
         let ctx = null;
+
+        // Variables para GIFs
+        let gifs = [];
+        let currentGifIndex = 0;
+        let gifDisplay = document.getElementById('gif-display');
+        let currentGif = document.getElementById('current-gif');
+        let gifPlaceholder = document.getElementById('gif-placeholder');
+        let gifTitle = document.getElementById('gif-title');
+        let gifList = document.getElementById('gif-list');
+        let prevGifBtn = document.getElementById('prev-gif-btn');
+        let nextGifBtn = document.getElementById('next-gif-btn');
+        let randomGifBtn = document.getElementById('random-gif-btn');
+        let gifTvContainer = document.querySelector('.gif-tv-container');
+
+        // 🔥 AQUÍ AGREGA TUS GIFS - Solo edita esta lista 🔥
+        const gifUrls = [
+           {
+        name: 'gato',
+        url: 'https://th.bing.com/th/id/R.7ca94c0ab58daa52cc8ca8adc6539ee4?rik=CHJN%2fbgbK0WNWg&pid=ImgRaw&r=0'
+        },
+        {
+        name: 'azul ritmo',
+        url: 'https://media.tenor.com/fuZLwPX0FpMAAAAd/jet-set-radio-future-jet-set-radio.gif'
+        },
+        {
+        name: 'ritmo rojo',
+        url: 'https://i.pinimg.com/originals/45/47/64/454764dc1c3f772dd9957ff1b4d6893c.gif'
+        },
+        {
+        name: 'ritmo gatp',
+        url: 'https://media.tenor.com/FMGsG1FM67MAAAAM/bomb-rush-cyberfunk.gif'
+        },
+        {
+        name: 'gum',
+        url: 'https://64.media.tumblr.com/8ee57945253145d69297afa4c532e498/tumblr_p8ekvmJPtu1xq94wqo1_540.gif'
+        },
+        { 
+        name: 'gato blanco', 
+        url: 'https://media.tenor.com/52esqHpENRwAAAAM/cat-dancing.gif'
+     },
+            // 👇 Agrega más GIFs aquí siguiendo el mismo formato:
+            // {
+            //     name: 'Nombre del GIF',
+            //     url: 'URL-del-gif-aqui'
+            // }
+        ];
 
         // Elementos del DOM
         const audio = document.getElementById('audio-player');
@@ -1101,6 +1314,135 @@
                 name: 'Mixed' 
             }
         };
+
+        // Cargar GIFs al iniciar
+        function loadGifs() {
+            // Convertir URLs al formato interno
+            gifs = gifUrls.map((gif, index) => ({
+                id: index,
+                name: gif.name,
+                url: gif.url,
+                preview: gif.url // Usar el mismo GIF como preview
+            }));
+            
+            renderGifList();
+            if (gifs.length > 0) {
+                showGif(0);
+            }
+        }
+
+        // Renderizar la lista de GIFs
+        function renderGifList() {
+            if (gifs.length === 0) {
+                gifList.innerHTML = '<p class="empty-playlist">No GIFs loaded... Add URLs to gifUrls array! 🎬</p>';
+                return;
+            }
+            
+            gifList.innerHTML = gifs.map((gif, index) => `
+                <div class="gif-item glass ${currentGifIndex === index ? 'active' : ''}" data-index="${index}">
+                    <div class="gif-info">
+                        <span class="gif-icon">🎬</span>
+                        <div>
+                            <div class="gif-name">${gif.name}</div>
+                        </div>
+                    </div>
+                    <img src="${gif.url}" alt="${gif.name}" class="gif-preview" 
+                         onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSJ1cmwoI2dyYWRpZW50MCkiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMTAgMTJWNy41TDEyLjUgMTBIMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMTAgMTJWNy41TDEyLjUgMTBIMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQwIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I0ZGODM0MjtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMkI2QTdDO3N0b3Atb3BhY2l0eToxIiAvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPg=='">
+                </div>
+            `).join('');
+            
+            // Añadir event listeners a cada item
+            document.querySelectorAll('.gif-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const index = parseInt(item.dataset.index);
+                    showGif(index);
+                });
+            });
+        }
+
+        // Función para ajustar el tamaño del contenedor del GIF según sus dimensiones
+        function adjustGifContainerSize(gifUrl) {
+            const img = new Image();
+            img.onload = function() {
+                // Obtener dimensiones reales del GIF
+                const width = this.naturalWidth;
+                const height = this.naturalHeight;
+                
+                // Calcular la relación de aspecto
+                const aspectRatio = width / height;
+                
+                // Determinar el tamaño máximo permitido
+                const maxWidth = gifDisplay.parentElement.offsetWidth;
+                const maxHeight = 500; // Altura máxima para evitar GIFs demasiado grandes
+                
+                let displayWidth, displayHeight;
+                
+                // Calcular el tamaño de visualización manteniendo la relación de aspecto
+                if (width / height > maxWidth / maxHeight) {
+                    // El GIF es más ancho que la relación permitida
+                    displayWidth = maxWidth;
+                    displayHeight = maxWidth / aspectRatio;
+                } else {
+                    // El GIF es más alto que la relación permitida
+                    displayHeight = Math.min(height, maxHeight);
+                    displayWidth = displayHeight * aspectRatio;
+                }
+                
+                // Aplicar las dimensiones al contenedor del GIF
+                gifDisplay.style.height = `${displayHeight}px`;
+                gifTvContainer.style.height = `${displayHeight + 60}px`; // 60px para los controles
+                
+                // Aplicar las dimensiones al GIF
+                currentGif.style.width = '100%';
+                currentGif.style.height = '100%';
+            };
+            
+            // Iniciar la carga de la imagen
+            img.src = gifUrl;
+        }
+
+        // Mostrar un GIF específico
+        function showGif(index) {
+            if (gifs.length === 0) return;
+            
+            // Asegurarse de que el índice esté dentro del rango
+            currentGifIndex = (index + gifs.length) % gifs.length;
+            const gif = gifs[currentGifIndex];
+            
+            // Ocultar placeholder y mostrar GIF
+            gifPlaceholder.style.display = 'none';
+            currentGif.style.display = 'block';
+            currentGif.src = gif.url;
+            
+            // Ajustar el tamaño del contenedor según las dimensiones del GIF
+            adjustGifContainerSize(gif.url);
+            
+            // Actualizar título
+            gifTitle.textContent = gif.name;
+            gifTitle.style.display = 'block';
+            
+            // Actualizar la lista para mostrar el activo
+            renderGifList();
+            
+            // Anunciar el cambio si DJ está activado
+            if (djEnabled) {
+                speakDJ(`GIF cambiado a ${gif.name}`);
+            }
+        }
+
+        // Event listeners para controles de GIF
+        prevGifBtn.addEventListener('click', () => {
+            showGif(currentGifIndex - 1);
+        });
+
+        nextGifBtn.addEventListener('click', () => {
+            showGif(currentGifIndex + 1);
+        });
+
+        randomGifBtn.addEventListener('click', () => {
+            const randomIndex = Math.floor(Math.random() * gifs.length);
+            showGif(randomIndex);
+        });
 
         // Inicializar el reproductor de YouTube
         function onYouTubeIframeAPIReady() {
@@ -1237,6 +1579,19 @@
                 shape1.style.background = interpolateColor(colors[0], colors[1], bassIntensity);
                 shape2.style.background = interpolateColor(colors[1], colors[2], midIntensity);
                 shape3.style.background = interpolateColor(colors[2], colors[0], trebleIntensity);
+                
+                // Hacer que el marco del GIF baile con la música
+                if (bass > 180) {
+                    gifTvContainer.classList.add('dancing');
+                    // Cambiar el color del borde según el género
+                    const color = interpolateColor(colors[0], colors[1], bassIntensity);
+                    gifTvContainer.style.borderColor = color;
+                    gifTvContainer.style.boxShadow = `0 0 ${30 + bass/5}px ${color}`;
+                } else {
+                    gifTvContainer.classList.remove('dancing');
+                    gifTvContainer.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    gifTvContainer.style.boxShadow = '0 0 30px rgba(255, 140, 66, 0.3)';
+                }
             } catch (error) {
                 console.error('Error updating shapes:', error);
             }
@@ -1345,15 +1700,21 @@
 
         // Inicializar API de letras
         function initLyricsAPI() {
-            // Intentar usar Genius API (simulado para demostración)
             lyricsApi = {
-                getLyrics: async function(trackName, artist) {
-                    // Simulación para demostración
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            resolve(`Esta es una letra de ejemplo para "${trackName}". En una implementación real, se usaría una API como Genius o Musixmatch para obtener la letra real.`);
-                        }, 1000);
-                    });
+                getLyrics: async function(title, artist) {
+                    try {
+                        const response = await fetch(`/api/lyrics?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            return data.lyrics;
+                        } else {
+                            throw new Error(data.error || 'No se encontró la letra');
+                        }
+                    } catch (error) {
+                        console.error('Error fetching lyrics:', error);
+                        throw error;
+                    }
                 }
             };
         }
@@ -1396,16 +1757,12 @@
         async function getYouTubeInfo(videoId) {
             try {
                 const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
-                const data = await response.text();
-                
-                // Extraer información del HTML
-                const titleMatch = data.match(/<title>([^<]*?)<\/title>/);
-                const artistMatch = data.match(/<span itemprop="name">([^<]*?)<\/span>/);
+                const data = await response.json();
                 
                 return {
-                    title: titleMatch ? titleMatch[1] : `Video: ${videoId}`,
-                    artist: artistMatch ? artistMatch[1] : 'YouTube',
-                    thumbnail: ''
+                    title: data.title || `Video: ${videoId}`,
+                    artist: data.author_name || 'YouTube',
+                    thumbnail: data.thumbnail_url || ''
                 };
             } catch (error) {
                 console.error('Error obteniendo información de YouTube:', error);
@@ -1423,23 +1780,39 @@
             lyricsStatusDot.style.background = '#FF8C42';
             
             let lyrics = '';
+            let title = '';
+            let artist = '';
             
             if (track.source === 'local' && track.file) {
                 // Intentar extraer metadatos del archivo de audio
                 const metadata = await extractAudioMetadata(track.file);
+                title = metadata.title || track.name;
+                artist = metadata.artist || 'Artista desconocido';
                 
                 if (metadata.lyrics) {
                     lyrics = metadata.lyrics;
                 } else {
                     // Si no hay letras en los metadatos, intentar con la API de letras
-                    lyrics = await lyricsApi.getLyrics(track.name, metadata.artist);
+                    try {
+                        lyrics = await lyricsApi.getLyrics(title, artist);
+                    } catch (error) {
+                        console.error('Error fetching lyrics:', error);
+                        lyrics = '';
+                    }
                 }
             } else if (track.source === 'youtube' && track.videoId) {
                 // Obtener información del video de YouTube
                 const videoInfo = await getYouTubeInfo(track.videoId);
+                title = videoInfo.title;
+                artist = videoInfo.artist;
                 
                 // Intentar obtener la letra usando el título y artista
-                lyrics = await lyricsApi.getLyrics(videoInfo.title, videoInfo.artist);
+                try {
+                    lyrics = await lyricsApi.getLyrics(title, artist);
+                } catch (error) {
+                    console.error('Error fetching lyrics:', error);
+                    lyrics = '';
+                }
             }
             
             // Mostrar la letra
@@ -1450,7 +1823,7 @@
                 lyricsStatusDot.style.background = '#C5D633';
             } else {
                 currentLyrics = '';
-                lyricsContent.innerHTML = '<p class="lyrics-content preview">No se encontró la letra para esta canción</p>';
+                lyricsContent.innerHTML = `<p class="lyrics-content preview">No se encontró la letra para "${title}"</p>`;
                 lyricsStatusText.textContent = 'Sin letra';
                 lyricsStatusDot.style.background = '#2B6A7C';
             }
@@ -1468,9 +1841,17 @@
 
         // Mostrar vista previa de la letra
         function showLyricsPreview(track) {
-            if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
-                const track = playlist[currentTrackIndex];
-                showLyricsPreview(track);
+            if (currentLyrics) {
+                // Mostrar las primeras líneas de la letra
+                const lines = currentLyrics.split('\n').filter(line => line.trim() !== '');
+                const preview = lines.slice(0, 3).join('\n');
+                
+                lyricsContent.innerHTML = `
+                    <p class="lyrics-content preview">${preview}</p>
+                    <p class="lyrics-content preview">...</p>
+                `;
+            } else {
+                lyricsContent.innerHTML = `<p class="lyrics-content preview">No hay letra disponible para "${track.name}"</p>`;
             }
         }
 
@@ -1663,7 +2044,7 @@
                 item.addEventListener('click', (e) => {
                     if (!e.target.closest('.download-btn')) {
                         const index = parseInt(item.dataset.index);
-                        loadLyricsForTrack(index);
+                        playTrack(index);
                     }
                 });
             });
@@ -1749,6 +2130,9 @@
             if (!audioContext) {
                 initAudioVisualization();
             }
+            
+            // Cargar letra antes de reproducir
+            loadLyricsForTrack(index);
             
             speakDJ(`Ahora suena ${track.name}. Género ${genres[track.genre].name}`);
         }
@@ -1845,16 +2229,29 @@
         playBtn.addEventListener('click', togglePlay);
         nextBtn.addEventListener('click', nextTrack);
         prevBtn.addEventListener('click', prevTrack);
+        
+        // Lyrics toggle
         lyricsToggle.addEventListener('click', () => {
             isPreviewMode = !isPreviewMode;
             if (isPreviewMode) {
                 lyricsToggle.innerHTML = '<i class="material-icons">visibility</i><span>Ver letra</span>';
                 lyricsToggle.classList.add('active');
+                
+                if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
+                    const track = playlist[currentTrackIndex];
+                    showLyricsPreview(track);
+                }
             } else {
                 lyricsToggle.innerHTML = '<i class="material-icons">mic</i><span>Transcribir</span>';
                 lyricsToggle.classList.remove('active');
+                
+                if (currentLyrics) {
+                    displayLyrics(currentLyrics);
+                }
             }
         });
+        
+        // Lyrics preview button
         lyricsPreview.addEventListener('click', () => {
             if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
                 const track = playlist[currentTrackIndex];
@@ -1914,10 +2311,12 @@
         initLyricsAPI();
         updateThemeColors('electronic');
         renderPlaylist();
+        loadGifs();
 
         console.log('🎵 All_night_radio iniciado correctamente! 🎵');
     </script>
     <script src="youtube-downloader.js"></script>
+    <script src="lyrics.js"></script>
 
 </body>
 </html>

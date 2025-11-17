@@ -94,6 +94,126 @@ body {
     50% { opacity: 0.7; }
 }
 
+/* GIF TV Container */
+.gif-tv-container {
+    width: 100%;
+    height: 600px; /* Altura fija más grande en lugar de aspect-ratio */
+    min-height: 450px; /* Altura mínima */
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 30px rgba(255, 140, 66, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.gif-display {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 300px; /* Altura mínima del área de visualización */
+}
+
+#current-gif {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Cambiado de 'cover' a 'contain' para no recortar */
+    background: #000; /* Fondo negro para espacios vacíos */
+}
+
+.gif-placeholder {
+    text-align: center;
+    padding: 2rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.gif-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 140, 66, 0.6);
+}
+
+.gif-controls {
+    display: flex;
+    justify-content: center;
+    padding: 0.75rem; /* Un poco más de padding */
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.gif-nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem; /* Botones un poco más grandes */
+    border-radius: 50%;
+    color: #fff;
+    transition: all 0.3s ease;
+    margin: 0 0.75rem; /* Más espacio entre botones */
+}
+
+.gif-nav-btn:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Animación para el marco que reacciona a la música */
+.gif-tv-container.dancing {
+    animation: tv-dance 0.5s infinite alternate;
+}
+
+@keyframes tv-dance {
+    0% { 
+        transform: scale(1) rotate(0deg); 
+        box-shadow: 0 0 30px rgba(255, 140, 66, 0.3);
+    }
+    50% { 
+        transform: scale(1.01) rotate(0.2deg); 
+        box-shadow: 0 0 40px rgba(255, 140, 66, 0.5);
+    }
+    100% { 
+        transform: scale(1.02) rotate(-0.2deg); 
+        box-shadow: 0 0 50px rgba(255, 140, 66, 0.7);
+    }
+}
+
+/* Para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .gif-tv-container {
+        height: 600px;
+        min-height: 500px;
+    }
+    
+    .gif-display {
+        min-height: 220px;
+    }
+    
+    .gif-controls {
+        padding: 0.5rem;
+    }
+    
+    .gif-nav-btn {
+        padding: 0.5rem;
+        margin: 0 0.5rem;
+    }
+}
+
+/* Para pantallas muy grandes */
+@media (min-width: 1200px) {
+    .gif-tv-container {
+        height: 500px;
+        min-height: 450px;
+    }
+    
+    .gif-display {
+        min-height: 400px;
+    }
+}
+
 /* Player Container */
 .player-container {
     max-width: 900px;
