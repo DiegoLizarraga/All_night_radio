@@ -4,10 +4,8 @@ from pytubefix import YouTube
 import os
 from pathlib import Path
 import re
-import json
 import requests
 from bs4 import BeautifulSoup
-import re
 import urllib.parse
 
 # Initialize Flask app first
@@ -24,8 +22,16 @@ CORS(app, resources={
 })
 
 # Configuration of Genius API
-GENIUS_API_TOKEN = 'AS0-MqTotWnOpqHquZjSL3keqUOCE4oHnocf731rpEIN53em4suTdFwdptnmgtVe'  # Replace with your token
+GENIUS_API_TOKEN = 'AS0-MqTotWnOpqHquZjSL3keqUOCE4oHnocf731rpEIN53em4suTdFwdptnmgtVe'
 GENIUS_API_URL = 'https://api.genius.com'
+
+# Folder for temporary files
+DOWNLOAD_FOLDER = Path("downloads")
+DOWNLOAD_FOLDER.mkdir(exist_ok=True)
+
+def sanitize_filename(filename):
+    """Cleans filename of invalid characters"""
+    return re.sub(r'[<>:"/\\|?*]', '', filename)
 
 def search_genius_song(title, artist=''):
     """Search song on Genius"""
@@ -35,11 +41,10 @@ def search_genius_song(title, artist=''):
     try:
         search_url = f"{GENIUS_API_URL}/search"
         params = {'q': search_query}
-        response = requests.get(search_url, headers=headers, params=params)
+        response = requests.get(search_url, headers=headers, params=params, timeout=10)
         data = response.json()
         
         if data['response']['hits']:
-            # Return first result
             song_info = data['response']['hits'][0]['result']
             return {
                 'success': True,
@@ -57,28 +62,23 @@ def search_genius_song(title, artist=''):
 def get_lyrics_from_genius(song_url):
     """Extract lyrics from Genius page"""
     try:
-        response = requests.get(song_url)
+        response = requests.get(song_url, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Genius uses different structures, try several selectors
         lyrics_div = soup.find('div', {'data-lyrics-container': 'true'})
         
         if lyrics_div:
-            # Extract all text from lyrics divs
             lyrics_containers = soup.find_all('div', {'data-lyrics-container': 'true'})
             lyrics = []
             
             for container in lyrics_containers:
-                # Get text and preserve line breaks
                 for br in container.find_all('br'):
                     br.replace_with('\n')
                 lyrics.append(container.get_text())
             
             full_lyrics = '\n'.join(lyrics).strip()
-            
-            # Clean lyrics
-            full_lyrics = re.sub(r'\[.*?\]', '', full_lyrics)  # Remove [Verse 1], etc.
-            full_lyrics = re.sub(r'\n{3,}', '\n\n', full_lyrics)  # Maximum 2 line breaks
+            full_lyrics = re.sub(r'\[.*?\]', '', full_lyrics)
+            full_lyrics = re.sub(r'\n{3,}', '\n\n', full_lyrics)
             
             return {'success': True, 'lyrics': full_lyrics}
         else:
@@ -87,60 +87,17 @@ def get_lyrics_from_genius(song_url):
     except Exception as e:
         return {'success': False, 'error': str(e)}
 
-def search_youtube_video(title, artist=''):
-    """Search for a music video on YouTube"""
-    try:
-        # Create search query with filters for official music videos
-        search_query = f"{title} {artist} official music video".strip()
-        encoded_query = urllib.parse.quote(search_query)
-        
-        # Use YouTube Data API v3 search endpoint
-        # Note: In production, you should use an API key
-        # For this example, we'll use a simple approach with ytsearch
-        search_url = f"https://yt.lemnoslife.com/videos?part=snippet&q={encoded_query}"
-        
-        response = requests.get(search_url)
-        data = response.json()
-        
-        if 'items' in data and len(data['items']) > 0:
-            # Get the first result
-            video = data['items'][0]
-            video_id = video['id']['videoId']
-            snippet = video['snippet']
-            
-            return {
-                'success': True,
-                'videoId': video_id,
-                'title': snippet['title'],
-                'description': snippet['description'],
-                'thumbnail': snippet['thumbnails']['high']['url'],
-                'channel': snippet['channelTitle'],
-                'url': f"https://www.youtube.com/watch?v={video_id}"
-            }
-        else:
-            return {'success': False, 'error': 'Video not found'}
-    
-    except Exception as e:
-        return {'success': False, 'error': str(e)}
-
-# Folder for temporary files
-DOWNLOAD_FOLDER = Path("downloads")
-DOWNLOAD_FOLDER.mkdir(exist_ok=True)
-
-def sanitize_filename(filename):
-    """Cleans filename of invalid characters"""
-    return re.sub(r'[<>:"/\\|?*]', '', filename)
-
 @app.route('/')
 def home():
     return jsonify({
         "message": "YouTube to MP3 conversion API",
+        "status": "online",
         "endpoints": {
             "/api/info": "GET - Get video information",
             "/api/download": "GET - Download MP3",
+            "/api/download-to-server": "POST - Download MP3 to server",
             "/api/files": "GET - List files in downloads",
             "/downloads/<filename>": "GET - Serve downloaded file",
-            "/api/search-youtube": "GET - Search YouTube video by song name",
             "/api/lyrics": "GET - Get song lyrics"
         }
     })
@@ -152,12 +109,10 @@ def get_video_info():
         url = request.args.get('url')
         
         if not url:
-            return jsonify({"error": "Parameter 'url' is required"}), 400
+            return jsonify({"success": False, "error": "Parameter 'url' is required"}), 400
         
-        # Create YouTube object
         yt = YouTube(url)
         
-        # Get video information
         info = {
             "success": True,
             "title": yt.title,
@@ -174,73 +129,21 @@ def get_video_info():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
-@app.route('/api/download', methods=['GET'])
-def download_mp3():
-    """Downloads video and converts to MP3"""
-    try:
-        url = request.args.get('url')
-        
-        if not url:
-            return jsonify({"error": "Parameter 'url' is required"}), 400
-        
-        # Create YouTube object
-        yt = YouTube(url)
-        
-        # Get highest quality audio stream
-        audio_stream = yt.streams.filter(only_audio=True).first()
-        
-        if not audio_stream:
-            return jsonify({"error": "No audio stream found"}), 400
-        
-        # Filename
-        filename = sanitize_filename(yt.title)
-        output_path = DOWNLOAD_FOLDER / f"{filename}.mp3"
-        
-        # Download audio
-        print(f"Downloading: {yt.title}")
-        downloaded_file = audio_stream.download(
-            output_path=DOWNLOAD_FOLDER,
-            filename=f"{filename}.mp4"
-        )
-        
-        # Convert to MP3 (requires ffmpeg installed)
-        try:
-            import subprocess
-            mp3_path = str(output_path)
-            subprocess.run([
-                'ffmpeg', '-i', downloaded_file,
-                '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k',
-                mp3_path, '-y'
-            ], check=True, capture_output=True)
-            
-            # Delete temporary mp4 file
-            os.remove(downloaded_file)
-            
-        except Exception as e:
-            # If ffmpeg fails, rename downloaded file to mp3
-            print(f"ffmpeg not available, using original file: {e}")
-            os.rename(downloaded_file, output_path)
-        
-        # Send file
-        return send_file(
-            output_path,
-            as_attachment=True,
-            download_name=f"{filename}.mp3",
-            mimetype='audio/mpeg'
-        )
-    
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
-
-@app.route('/api/download-to-server', methods=['POST'])
+@app.route('/api/download-to-server', methods=['POST', 'OPTIONS'])
 def download_to_server():
     """Downloads MP3 and saves it to server"""
+    # Handle preflight request
+    if request.method == 'OPTIONS':
+        return '', 204
+    
     try:
         data = request.json
-        url = data.get('url')
+        url = data.get('url') if data else None
         
         if not url:
-            return jsonify({"error": "Parameter 'url' is required"}), 400
+            return jsonify({"success": False, "error": "Parameter 'url' is required"}), 400
+        
+        print(f"📥 Iniciando descarga de: {url}")
         
         # Create YouTube object
         yt = YouTube(url)
@@ -249,14 +152,15 @@ def download_to_server():
         audio_stream = yt.streams.filter(only_audio=True).first()
         
         if not audio_stream:
-            return jsonify({"error": "No audio stream found"}), 400
+            return jsonify({"success": False, "error": "No audio stream found"}), 400
         
         # Filename
         filename = sanitize_filename(yt.title)
         output_path = DOWNLOAD_FOLDER / f"{filename}.mp3"
         
+        print(f"💾 Descargando: {yt.title}")
+        
         # Download audio
-        print(f"Downloading: {yt.title}")
         downloaded_file = audio_stream.download(
             output_path=DOWNLOAD_FOLDER,
             filename=f"{filename}.mp4"
@@ -266,6 +170,7 @@ def download_to_server():
         try:
             import subprocess
             mp3_path = str(output_path)
+            print("🔄 Convirtiendo a MP3...")
             subprocess.run([
                 'ffmpeg', '-i', downloaded_file,
                 '-vn', '-ar', '44100', '-ac', '2', '-b:a', '192k',
@@ -274,11 +179,14 @@ def download_to_server():
             
             # Delete temporary mp4 file
             os.remove(downloaded_file)
+            print("✅ Conversión completada")
             
         except Exception as e:
             # If ffmpeg fails, rename downloaded file to mp3
-            print(f"ffmpeg not available, using original file: {e}")
+            print(f"⚠️ ffmpeg not available, using original file: {e}")
             os.rename(downloaded_file, output_path)
+        
+        print(f"✅ Descarga completada: {filename}.mp3")
         
         # Return file information
         return jsonify({
@@ -289,7 +197,8 @@ def download_to_server():
         })
     
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+        print(f"❌ Error en descarga: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/files', methods=['GET'])
 def list_files():
@@ -305,7 +214,8 @@ def list_files():
         
         return jsonify({
             "success": True,
-            "files": files
+            "files": files,
+            "count": len(files)
         })
     
     except Exception as e:
@@ -319,9 +229,10 @@ def serve_file(filename):
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Cache-Control'] = 'public, max-age=3600'
         return response
     except Exception as e:
-        return jsonify({"error": str(e)}), 404
+        return jsonify({"success": False, "error": str(e)}), 404
 
 @app.route('/api/cleanup', methods=['POST'])
 def cleanup():
@@ -341,7 +252,6 @@ def cleanup():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
-# Add this endpoint after the others
 @app.route('/api/lyrics', methods=['GET'])
 def get_lyrics():
     """Get song lyrics"""
@@ -350,7 +260,7 @@ def get_lyrics():
         artist = request.args.get('artist', '')
         
         if not title:
-            return jsonify({"error": "Parameter 'title' is required"}), 400
+            return jsonify({"success": False, "error": "Parameter 'title' is required"}), 400
         
         # Search song on Genius
         song_info = search_genius_song(title, artist)
@@ -377,56 +287,26 @@ def get_lyrics():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
-# Alternative endpoint for search only
-@app.route('/api/search-song', methods=['GET'])
-def search_song():
-    """Search song information"""
-    try:
-        title = request.args.get('title')
-        artist = request.args.get('artist', '')
-        
-        if not title:
-            return jsonify({"error": "Parameter 'title' is required"}), 400
-        
-        song_info = search_genius_song(title, artist)
-        return jsonify(song_info)
-    
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"success": False, "error": "Endpoint not found"}), 404
 
-# New endpoint to search YouTube videos by song name
-@app.route('/api/search-youtube', methods=['GET'])
-def search_youtube():
-    """Search for YouTube video by song name"""
-    try:
-        title = request.args.get('title')
-        artist = request.args.get('artist', '')
-        
-        if not title:
-            return jsonify({"error": "Parameter 'title' is required"}), 400
-        
-        # Search for video
-        video_info = search_youtube_video(title, artist)
-        
-        if not video_info['success']:
-            return jsonify(video_info), 404
-        
-        # Return video information
-        return jsonify(video_info)
-    
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+@app.errorhandler(500)
+def internal_error(e):
+    return jsonify({"success": False, "error": "Internal server error"}), 500
 
 if __name__ == '__main__':
-    print("🚀 Server started at http://localhost:5000")
+    print("=" * 60)
+    print("🚀 All Night Radio - Backend Server")
+    print("=" * 60)
+    print(f"📡 Server: http://localhost:5000")
+    print(f"📁 Downloads folder: {DOWNLOAD_FOLDER.absolute()}")
+    print("")
     print("📝 Available endpoints:")
-    print("   - GET /api/info?url=<youtube_url>")
-    print("   - GET /api/download?url=<youtube_url>")
-    print("   - POST /api/download-to-server (JSON: {url: <youtube_url>})")
-    print("   - GET /api/files")
-    print("   - GET /downloads/<filename>")
-    print("   - POST /api/cleanup")
-    print("   - GET /api/lyrics?title=<song_title>&artist=<artist_name>")
-    print("   - GET /api/search-song?title=<song_title>&artist=<artist_name>")
-    print("   - GET /api/search-youtube?title=<song_title>&artist=<artist_name>")
-    app.run(debug=True, port=5000)
+    print("   • GET  /api/info?url=<youtube_url>")
+    print("   • POST /api/download-to-server")
+    print("   • GET  /api/files")
+    print("   • GET  /downloads/<filename>")
+    print("   • GET  /api/lyrics?title=<song>&artist=<artist>")
+    print("=" * 60)
+    app.run(debug=True, port=5000, host='0.0.0.0')

@@ -1,25 +1,26 @@
-// Variables globales para letras
-let currentLyrics = null;
-let lyricsCache = {}; // Cache para no volver a pedir las mismas letras
+// ============================================
+// SISTEMA DE LETRAS
+// ============================================
 
-// Función para cargar letras de una canción
+let currentLyrics = null;
+let lyricsCache = {};
+const API_URL = 'http://localhost:5000';
+
+// ============================================
+// CARGAR LETRAS
+// ============================================
 async function loadLyrics(trackName, artist = '') {
     const lyricsContent = document.getElementById('lyrics-content');
     const lyricsStatusText = document.getElementById('lyrics-status-text');
     const lyricsStatusDot = document.getElementById('lyrics-status-dot');
     
-    // Actualizar estado
     lyricsStatusText.textContent = 'Buscando...';
     lyricsStatusDot.style.background = '#FF8C42';
     lyricsContent.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.6);">🔍 Buscando letra...</p>';
     
-    // Limpiar el nombre del track (quitar extensiones y caracteres especiales)
     const cleanTitle = trackName.replace(/\.(mp3|wav|m4a|flac)$/i, '').replace(/[_-]/g, ' ');
-    
-    // Crear clave de cache
     const cacheKey = `${cleanTitle}-${artist}`.toLowerCase();
     
-    // Verificar cache
     if (lyricsCache[cacheKey]) {
         displayLyrics(lyricsCache[cacheKey]);
         lyricsStatusText.textContent = 'Cargada (cache)';
@@ -28,7 +29,6 @@ async function loadLyrics(trackName, artist = '') {
     }
     
     try {
-        // Llamar a la API del backend
         const params = new URLSearchParams({
             title: cleanTitle,
             artist: artist
@@ -38,7 +38,6 @@ async function loadLyrics(trackName, artist = '') {
         const data = await response.json();
         
         if (data.success && data.lyrics) {
-            // Guardar en cache
             lyricsCache[cacheKey] = {
                 lyrics: data.lyrics,
                 title: data.title,
@@ -77,16 +76,16 @@ async function loadLyrics(trackName, artist = '') {
     }
 }
 
-// Función para mostrar las letras con animación
+// ============================================
+// MOSTRAR LETRAS
+// ============================================
 function displayLyrics(data) {
     const lyricsContent = document.getElementById('lyrics-content');
     
-    // Dividir la letra en líneas
     const lines = data.lyrics.split('\n').filter(line => line.trim() !== '');
     
-    // Crear HTML con animación escalonada
     const lyricsHTML = lines.map((line, index) => {
-        const delay = index * 0.05; // 50ms de delay entre cada línea
+        const delay = index * 0.05;
         return `
             <p class="lyrics-line" style="
                 opacity: 0;
@@ -98,7 +97,6 @@ function displayLyrics(data) {
         `;
     }).join('');
     
-    // Agregar header con información
     lyricsContent.innerHTML = `
         <div style="
             text-align: center;
@@ -127,7 +125,6 @@ function displayLyrics(data) {
         </div>
     `;
     
-    // Agregar animación CSS si no existe
     if (!document.getElementById('lyrics-animation-style')) {
         const style = document.createElement('style');
         style.id = 'lyrics-animation-style';
@@ -155,13 +152,14 @@ function displayLyrics(data) {
     }
 }
 
-// Función mejorada para extraer artista del nombre del archivo
+// ============================================
+// EXTRAER INFORMACIÓN DEL ARCHIVO
+// ============================================
 function extractArtistFromFilename(filename) {
-    // Patrones comunes: "Artista - Canción" o "Artista_Canción"
     const patterns = [
-        /^(.+?)\s*-\s*(.+)$/,  // Artista - Canción
-        /^(.+?)_(.+)$/,         // Artista_Canción
-        /^(.+?)\s+by\s+(.+)$/i  // Canción by Artista
+        /^(.+?)\s*-\s*(.+)$/,
+        /^(.+?)_(.+)$/,
+        /^(.+?)\s+by\s+(.+)$/i
     ];
     
     for (const pattern of patterns) {
@@ -180,28 +178,30 @@ function extractArtistFromFilename(filename) {
     };
 }
 
-// Modificar la función playTrack existente para cargar letras automáticamente
-const originalPlayTrack = playTrack;
-playTrack = function(index) {
-    // Llamar a la función original
-    originalPlayTrack(index);
+// ============================================
+// INTEGRACIÓN CON PLAYTRACK
+// ============================================
+const originalPlayTrack = window.playTrack;
+window.playTrack = function(index) {
+    if (originalPlayTrack) {
+        originalPlayTrack(index);
+    }
     
-    // Cargar letras de la canción
     if (index >= 0 && index < playlist.length) {
         const track = playlist[index];
         const { artist, title } = extractArtistFromFilename(track.name);
         
-        // Cargar letras después de un pequeño delay
         setTimeout(() => {
             loadLyrics(title, artist);
         }, 500);
     }
 };
 
-// Event listeners para los botones de letras
+// ============================================
+// EVENT LISTENERS
+// ============================================
 document.getElementById('lyrics-preview')?.addEventListener('click', function() {
     if (currentLyrics) {
-        // Toggle entre mostrar/ocultar letra completa
         const lyricsContent = document.getElementById('lyrics-content');
         if (lyricsContent.style.maxHeight === '150px') {
             lyricsContent.style.maxHeight = 'none';
@@ -218,10 +218,8 @@ document.getElementById('lyrics-toggle')?.addEventListener('click', async functi
         const track = playlist[currentTrackIndex];
         const { artist, title } = extractArtistFromFilename(track.name);
         
-        // Recargar letras
         await loadLyrics(title, artist);
         
-        // Feedback visual
         this.style.transform = 'scale(1.1)';
         setTimeout(() => {
             this.style.transform = 'scale(1)';
@@ -231,7 +229,9 @@ document.getElementById('lyrics-toggle')?.addEventListener('click', async functi
     }
 });
 
-// Función para buscar letra manualmente
+// ============================================
+// BÚSQUEDA MANUAL
+// ============================================
 function searchLyricsManually() {
     const title = prompt('Ingresa el título de la canción:');
     if (title) {
@@ -240,7 +240,6 @@ function searchLyricsManually() {
     }
 }
 
-// Agregar botón de búsqueda manual (opcional)
 function addManualSearchButton() {
     const lyricsHeader = document.querySelector('.lyrics-header');
     if (lyricsHeader && !document.getElementById('lyrics-manual-search')) {
@@ -257,7 +256,9 @@ function addManualSearchButton() {
     }
 }
 
-// Inicializar cuando el DOM esté listo
+// ============================================
+// INICIALIZACIÓN
+// ============================================
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         addManualSearchButton();

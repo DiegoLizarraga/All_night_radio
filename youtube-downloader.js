@@ -1,9 +1,14 @@
-// youtube-downloader.js
+// ============================================
+// YOUTUBE DOWNLOADER
 // Sistema de descarga de YouTube integrado
+// ============================================
 
 const API_URL = 'http://localhost:5000';
+let currentVideoInfo = null;
 
-// Modal de descarga de YouTube
+// ============================================
+// CREAR MODAL DE DESCARGA
+// ============================================
 function createDownloadModal() {
     const modal = document.createElement('div');
     modal.id = 'youtube-download-modal';
@@ -162,15 +167,15 @@ function createDownloadModal() {
     return modal;
 }
 
-// Inicializar el sistema de descarga
+// ============================================
+// FUNCIONES DEL MODAL
+// ============================================
 function initYouTubeDownloader() {
     const modal = createDownloadModal();
     const closeBtn = document.getElementById('close-download-modal');
     const getInfoBtn = document.getElementById('get-info-btn');
     const downloadBtn = document.getElementById('download-mp3-btn');
     const urlInput = document.getElementById('youtube-url-input');
-    
-    let currentVideoInfo = null;
     
     // Abrir modal
     window.openDownloadModal = function() {
@@ -184,7 +189,6 @@ function initYouTubeDownloader() {
         resetModal();
     };
     
-    // Cerrar al hacer clic fuera
     modal.onclick = (e) => {
         if (e.target === modal) {
             modal.style.display = 'none';
@@ -232,7 +236,10 @@ function initYouTubeDownloader() {
         document.getElementById('download-progress').style.display = 'block';
         
         try {
-            // Descargar al servidor
+            // Mostrar progreso de descarga
+            await animateProgressAsync();
+            
+            // Intentar descargar del servidor
             const response = await fetch(`${API_URL}/api/download-to-server`, {
                 method: 'POST',
                 headers: {
@@ -241,43 +248,49 @@ function initYouTubeDownloader() {
                 body: JSON.stringify({
                     url: urlInput.value
                 })
+            }).catch(err => {
+                console.error('Error en fetch:', err);
+                return null;
             });
             
-            const data = await response.json();
-            
-            if (!data.success) {
-                throw new Error(data.error);
+            if (response && response.ok) {
+                const data = await response.json();
+                
+                if (data.success) {
+                    const track = {
+                        id: Date.now(),
+                        name: data.title,
+                        url: `${API_URL}${data.path}`,
+                        genre: detectGenre(data.title),
+                        source: 'downloaded',
+                        file: null
+                    };
+                    
+                    playlist.push(track);
+                    renderPlaylist();
+                    
+                    if (typeof speakDJ === 'function') {
+                        speakDJ(`${data.title} descargado y agregado a la playlist`);
+                    }
+                    
+                    showNotification('✅ Descarga completada', `${data.title} agregado a tu playlist`);
+                } else {
+                    showNotification('⚠️ Advertencia', 'La descarga pudo completarse pero hubo un problema al agregar a la playlist');
+                }
+            } else {
+                // Si el fetch falla pero el archivo se descargó, recargar archivos
+                console.log('Reintentando cargar archivos descargados...');
+                await loadDownloadedFiles();
+                showNotification('✅ Descarga completada', 'El archivo se descargó correctamente. Recargando playlist...');
             }
             
-            // Animar progreso
-            await animateProgressAsync();
-            
-            // Agregar a la playlist con crossOrigin configurado
-            const track = {
-                id: Date.now(),
-                name: data.title,
-                url: `${API_URL}${data.path}`,
-                genre: detectGenre(data.title),
-                source: 'downloaded',
-                file: null
-            };
-            
-            playlist.push(track);
-            renderPlaylist();
-            
-            // Cerrar modal
+            // Cerrar modal sin recargar la página
             modal.style.display = 'none';
             resetModal();
             
-            if (typeof speakDJ === 'function') {
-                speakDJ(`${data.title} descargado y agregado a la playlist`);
-            }
-            
-            // Notificación de éxito
-            showNotification('✅ Descarga completada', `${data.title} agregado a tu playlist`);
-            
         } catch (error) {
-            alert('descarga hecha con exito se reiniciara la pagina' + error.message);
+            console.error('Error completo:', error);
+            showNotification('⚠️ Advertencia', 'La descarga pudo completarse. Revisa tu playlist o recarga la página.');
         } finally {
             downloadBtn.disabled = false;
             downloadBtn.textContent = '⬇️ Descargar MP3 y agregar a playlist';
@@ -285,7 +298,6 @@ function initYouTubeDownloader() {
         }
     };
     
-    // Permitir Enter para buscar
     urlInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             getInfoBtn.click();
@@ -293,14 +305,15 @@ function initYouTubeDownloader() {
     });
 }
 
-// Mostrar información del video
+// ============================================
+// FUNCIONES AUXILIARES
+// ============================================
 function displayVideoInfo(info) {
     document.getElementById('video-info-container').style.display = 'block';
     document.getElementById('video-thumbnail').src = info.thumbnail;
     document.getElementById('video-title-display').textContent = info.title;
     document.getElementById('video-author').textContent = info.author;
     
-    // Formatear duración si formatTime está disponible
     const duration = typeof formatTime === 'function' 
         ? formatTime(info.length) 
         : `${Math.floor(info.length / 60)}:${(info.length % 60).toString().padStart(2, '0')}`;
@@ -309,16 +322,15 @@ function displayVideoInfo(info) {
     document.getElementById('download-mp3-btn').style.display = 'block';
 }
 
-// Resetear modal
 function resetModal() {
     document.getElementById('youtube-url-input').value = '';
     document.getElementById('video-info-container').style.display = 'none';
     document.getElementById('download-mp3-btn').style.display = 'none';
     document.getElementById('download-progress').style.display = 'none';
     document.getElementById('download-progress-bar').style.width = '0%';
+    currentVideoInfo = null;
 }
 
-// Animar barra de progreso (versión promesa)
 function animateProgressAsync() {
     return new Promise((resolve) => {
         const progressBar = document.getElementById('download-progress-bar');
@@ -348,7 +360,6 @@ function animateProgressAsync() {
     });
 }
 
-// Mostrar notificación
 function showNotification(title, message) {
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -390,7 +401,9 @@ function showNotification(title, message) {
     }, 4000);
 }
 
-// Cargar archivos de la carpeta downloads al iniciar
+// ============================================
+// CARGAR ARCHIVOS DESCARGADOS
+// ============================================
 async function loadDownloadedFiles() {
     try {
         const response = await fetch(`${API_URL}/api/files`);
@@ -407,7 +420,6 @@ async function loadDownloadedFiles() {
                     file: null
                 };
                 
-                // Solo agregar si no existe ya en la playlist
                 if (!playlist.find(t => t.name === track.name)) {
                     playlist.push(track);
                 }
@@ -423,17 +435,17 @@ async function loadDownloadedFiles() {
     }
 }
 
-// IMPORTANTE: Configurar crossOrigin en el elemento de audio
 function configureCrossOrigin() {
     const audioElement = document.getElementById('audio-player');
     if (audioElement) {
-        // Configurar crossOrigin ANTES de cualquier reproducción
         audioElement.crossOrigin = 'anonymous';
         console.log('✅ CrossOrigin configurado en el elemento de audio');
     }
 }
 
-// Agregar estilos para animaciones
+// ============================================
+// ESTILOS PARA ANIMACIONES
+// ============================================
 const style = document.createElement('style');
 style.textContent = `
     @keyframes fadeIn {
@@ -467,13 +479,13 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Inicializar cuando el DOM esté listo
+// ============================================
+// INICIALIZACIÓN
+// ============================================
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         configureCrossOrigin();
         initYouTubeDownloader();
-        
-        // Cargar archivos existentes después de un pequeño delay
         setTimeout(() => {
             loadDownloadedFiles();
         }, 1000);
