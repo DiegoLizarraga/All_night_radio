@@ -353,6 +353,109 @@
             letter-spacing: 1px;
         }
 
+        /* Lyrics Container */
+        .lyrics-container {
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .lyrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .lyrics-title {
+            font-family: 'Bungee', cursive;
+            color: #C5D633;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .lyrics-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .lyrics-toggle {
+            background: none;
+            border: none;
+            color: #2B6A7C;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .lyrics-toggle:hover {
+            color: #FF8C42;
+        }
+
+        .lyrics-toggle.active {
+            color: #FF8C42;
+        }
+
+        .lyrics-content {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #fff;
+            text-align: center;
+            min-height: 100px;
+            padding: 0.5rem;
+            overflow-y: auto;
+        }
+
+        .lyrics-content.preview {
+            color: #C5D633;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .lyrics-line {
+            margin-bottom: 0.8rem;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .lyrics-status {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lyrics-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #C5D633;
+            animation: pulse 1.5s infinite;
+        }
+
         /* Track Display */
         .track-display {
             text-align: center;
@@ -870,6 +973,31 @@
                         <p>YouTube videos will appear here</p>
                     </div>
                 </div>
+                
+                <!-- Lyrics Container -->
+                <div class="lyrics-container glass">
+                    <div class="lyrics-header">
+                        <h3 class="lyrics-title">★ LYRICS ★</h3>
+                        <div class="lyrics-actions">
+                            <button id="lyrics-preview" class="lyrics-toggle">
+                                <i class="material-icons">visibility</i>
+                                <span>Ver letra</span>
+                            </button>
+                            <button id="lyrics-toggle" class="lyrics-toggle">
+                                <i class="material-icons">mic</i>
+                                <span>Transcribir</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="lyrics-content" class="layers-content">
+                        <p class="lyrics-content preview">Selecciona una canción para ver su letra</p>
+                    </div>
+                    <div class="lyrics-status">
+                        <div id="lyrics-status-dot" class="lyrics-status-dot"></div>
+                        <span id="lyrics-status-text">Inactivo</span>
+                    </div>
+                </div>
+                
                 <div id="video-title" class="video-title" style="display: none;">
                     No video loaded
                 </div>
@@ -898,6 +1026,9 @@
         let currentGenre = 'electronic';
         let youtubePlayer = null;
         let currentVideoId = null;
+        let isPreviewMode = false;
+        let currentLyrics = '';
+        let lyricsApi = null;
 
         // Variables para visualización de audio
         let audioContext = null;
@@ -935,6 +1066,13 @@
         const shape1 = document.querySelector('.shape-1');
         const shape2 = document.querySelector('.shape-2');
         const shape3 = document.querySelector('.shape-3');
+        
+        // Elementos para letras
+        const lyricsToggle = document.getElementById('lyrics-toggle');
+        const lyricsPreview = document.getElementById('lyrics-preview');
+        const lyricsContent = document.getElementById('lyrics-content');
+        const lyricsStatusDot = document.getElementById('lyrics-status-dot');
+        const lyricsStatusText = document.getElementById('lyrics-status-text');
 
         // Géneros y sus colores - Paleta de colores de Jet Set Radio
         const genres = {
@@ -1205,6 +1343,145 @@
             }
         }
 
+        // Inicializar API de letras
+        function initLyricsAPI() {
+            // Intentar usar Genius API (simulado para demostración)
+            lyricsApi = {
+                getLyrics: async function(trackName, artist) {
+                    // Simulación para demostración
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve(`Esta es una letra de ejemplo para "${trackName}". En una implementación real, se usaría una API como Genius o Musixmatch para obtener la letra real.`);
+                        }, 1000);
+                    });
+                }
+            };
+        }
+
+        // Extraer metadatos del archivo de audio
+        function extractAudioMetadata(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    
+                    // Crear un contexto de audio para leer los metadatos
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    audioContext.decodeAudioData(arrayBuffer, function(buffer) {
+                        const metadata = {};
+                        
+                        // Intentar extraer información del buffer
+                        try {
+                            // Algunos navegadores permiten acceder a metadatos de audio
+                            if (buffer.tag) {
+                                metadata.title = buffer.tag.title || file.name.replace(/\.[^/.]+$/, '');
+                                metadata.artist = buffer.tag.artist || 'Artista desconocido';
+                                metadata.album = buffer.tag.album || 'Álbum desconocido';
+                                metadata.lyrics = buffer.tag.lyrics || '';
+                            }
+                        } catch (e) {
+                            console.error('Error extrayendo metadatos:', e);
+                        }
+                        
+                        resolve(metadata);
+                    });
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Obtener información del video de YouTube
+        async function getYouTubeInfo(videoId) {
+            try {
+                const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+                const data = await response.text();
+                
+                // Extraer información del HTML
+                const titleMatch = data.match(/<title>([^<]*?)<\/title>/);
+                const artistMatch = data.match(/<span itemprop="name">([^<]*?)<\/span>/);
+                
+                return {
+                    title: titleMatch ? titleMatch[1] : `Video: ${videoId}`,
+                    artist: artistMatch ? artistMatch[1] : 'YouTube',
+                    thumbnail: ''
+                };
+            } catch (error) {
+                console.error('Error obteniendo información de YouTube:', error);
+                return {
+                    title: `Video: ${videoId}`,
+                    artist: 'YouTube',
+                    thumbnail: ''
+                };
+            }
+        }
+
+        // Cargar letra de una canción
+        async function loadLyrics(track) {
+            lyricsStatusText.textContent = 'Cargando...';
+            lyricsStatusDot.style.background = '#FF8C42';
+            
+            let lyrics = '';
+            
+            if (track.source === 'local' && track.file) {
+                // Intentar extraer metadatos del archivo de audio
+                const metadata = await extractAudioMetadata(track.file);
+                
+                if (metadata.lyrics) {
+                    lyrics = metadata.lyrics;
+                } else {
+                    // Si no hay letras en los metadatos, intentar con la API de letras
+                    lyrics = await lyricsApi.getLyrics(track.name, metadata.artist);
+                }
+            } else if (track.source === 'youtube' && track.videoId) {
+                // Obtener información del video de YouTube
+                const videoInfo = await getYouTubeInfo(track.videoId);
+                
+                // Intentar obtener la letra usando el título y artista
+                lyrics = await lyricsApi.getLyrics(videoInfo.title, videoInfo.artist);
+            }
+            
+            // Mostrar la letra
+            if (lyrics) {
+                currentLyrics = lyrics;
+                displayLyrics(lyrics);
+                lyricsStatusText.textContent = 'Cargada';
+                lyricsStatusDot.style.background = '#C5D633';
+            } else {
+                currentLyrics = '';
+                lyricsContent.innerHTML = '<p class="lyrics-content preview">No se encontró la letra para esta canción</p>';
+                lyricsStatusText.textContent = 'Sin letra';
+                lyricsStatusDot.style.background = '#2B6A7C';
+            }
+        }
+
+        // Mostrar letra
+        function displayLyrics(lyrics) {
+            // Dividir la letra en líneas
+            const lines = lyrics.split('\n').filter(line => line.trim() !== '');
+            
+            lyricsContent.innerHTML = lines.map((line, index) => 
+                `<p class="lyrics-line" style="animation-delay: ${index * 0.1}s">${line}</p>`
+            ).join('');
+        }
+
+        // Mostrar vista previa de la letra
+        function showLyricsPreview(track) {
+            if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
+                const track = playlist[currentTrackIndex];
+                showLyricsPreview(track);
+            }
+        }
+
+        // Cargar letra cuando se selecciona una canción
+        async function loadLyricsForTrack(index) {
+            if (index >= 0 && index < playlist.length) {
+                const track = playlist[index];
+                await loadLyrics(track);
+            }
+        }
+
         // Detectar género por nombre de archivo
         function detectGenre(filename) {
             const name = filename.toLowerCase();
@@ -1386,7 +1663,7 @@
                 item.addEventListener('click', (e) => {
                     if (!e.target.closest('.download-btn')) {
                         const index = parseInt(item.dataset.index);
-                        playTrack(index);
+                        loadLyricsForTrack(index);
                     }
                 });
             });
@@ -1424,7 +1701,7 @@
         }
 
         // Reproducir track
-        function playTrack(index) {
+        async function playTrack(index) {
             const track = playlist[index];
             
             if (track.source === 'youtube') {
@@ -1445,6 +1722,9 @@
                 
                 updateThemeColors(track.genre);
                 renderPlaylist();
+                
+                // Cargar letra antes de reproducir
+                loadLyricsForTrack(index);
                 
                 speakDJ(`Reproduciendo ${track.name} en YouTube`);
                 return;
@@ -1565,6 +1845,22 @@
         playBtn.addEventListener('click', togglePlay);
         nextBtn.addEventListener('click', nextTrack);
         prevBtn.addEventListener('click', prevTrack);
+        lyricsToggle.addEventListener('click', () => {
+            isPreviewMode = !isPreviewMode;
+            if (isPreviewMode) {
+                lyricsToggle.innerHTML = '<i class="material-icons">visibility</i><span>Ver letra</span>';
+                lyricsToggle.classList.add('active');
+            } else {
+                lyricsToggle.innerHTML = '<i class="material-icons">mic</i><span>Transcribir</span>';
+                lyricsToggle.classList.remove('active');
+            }
+        });
+        lyricsPreview.addEventListener('click', () => {
+            if (currentTrackIndex >= 0 && currentTrackIndex < playlist.length) {
+                const track = playlist[currentTrackIndex];
+                showLyricsPreview(track);
+            }
+        });
 
         // Modo radio
         radioBtn.addEventListener('click', () => {
@@ -1615,6 +1911,7 @@
         });
 
         // Inicializar
+        initLyricsAPI();
         updateThemeColors('electronic');
         renderPlaylist();
 
