@@ -950,8 +950,8 @@
                         <input type="file" id="file-input" multiple accept="audio/*" style="display:none;">
                     </label>
                     
-                    <button id="youtube-btn" class="upload-btn glass">
-                        📺 Add YouTube URL
+                    <button id="youtube-btn" class="upload-btn glass" onclick="openDownloadModal()">
+                    📺 Download YouTube MP3
                     </button>
                 </div>
 
@@ -1012,7 +1012,7 @@
     </div>
 
     <!-- Audio Element -->
-    <audio id="audio-player"></audio>
+    <audio id="audio-player" crossorigin="anonymous"></audio>
 
     <!-- YouTube API Script -->
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -1917,5 +1917,7 @@
 
         console.log('🎵 All_night_radio iniciado correctamente! 🎵');
     </script>
+    <script src="youtube-downloader.js"></script>
+
 </body>
 </html>
