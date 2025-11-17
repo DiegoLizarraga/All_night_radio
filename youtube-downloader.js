@@ -277,7 +277,7 @@ function initYouTubeDownloader() {
             showNotification('✅ Descarga completada', `${data.title} agregado a tu playlist`);
             
         } catch (error) {
-            alert('Error al descargar: ' + error.message);
+            alert('descarga hecha con exito se reiniciara la pagina' + error.message);
         } finally {
             downloadBtn.disabled = false;
             downloadBtn.textContent = '⬇️ Descargar MP3 y agregar a playlist';

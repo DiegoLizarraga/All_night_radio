@@ -513,7 +513,7 @@ function detectGenre(filename) {
 function updateThemeColors(genre) {
     const colors = genres[genre].colors;
     backgroundAnimation.style.background = `linear-gradient(135deg, ${colors[0]}22, ${colors[1]}22, ${colors[2]}22)`;
-    genreDisplay.textContent = `.:* NOW PLAYING: ${genres[genre].name.toUpperCase()} VIBES *:.`;
+    genreDisplay.textContent = `.:* Sigue el ritmo 🎧 *:.`;
     genreDisplay.style.color = colors[0];
     
     // Actualizar color de la barra de progreso
