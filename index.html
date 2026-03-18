@@ -7,6 +7,173 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Orbitron:wght@400;700;900&family=Permanent+Marker&family=Bungee&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* ── QR Section ───────────────────────────────────── */
+        .qr-section {
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qr-section-title {
+            font-family: 'Bungee', cursive;
+            color: #FF8C42;
+            font-size: 1.2rem;
+            letter-spacing: 0.12em;
+            text-shadow: 0 0 14px rgba(255,140,66,0.6);
+            text-align: center;
+            margin: 0;
+        }
+
+        /* idle state */
+        #qr-idle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem 0;
+        }
+        .qr-idle-icon {
+            font-size: 3rem;
+            opacity: 0.35;
+            animation: qr-pulse 2.5s ease-in-out infinite;
+        }
+        @keyframes qr-pulse {
+            0%, 100% { opacity: 0.35; transform: scale(1);    }
+            50%       { opacity: 0.6;  transform: scale(1.08); }
+        }
+        #qr-idle p {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            margin: 0;
+            letter-spacing: 0.05em;
+        }
+
+        /* QR canvas wrapper */
+        #qr-canvas-wrap {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.9rem;
+            animation: qr-card-in 0.35s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes qr-card-in {
+            from { transform: scale(0.88) translateY(12px); opacity: 0; }
+            to   { transform: scale(1)    translateY(0);    opacity: 1; }
+        }
+
+        #qr-box {
+            position: relative;
+            padding: 10px;
+            border-radius: 0.9rem;
+            background: #0a0a14;
+            border: 2px solid rgba(255,140,66,0.5);
+            box-shadow: 0 0 28px rgba(255,140,66,0.25);
+            overflow: hidden;
+        }
+        /* scan line */
+        #qr-box::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #FF8C42, transparent);
+            top: 0;
+            animation: qr-scan 2s ease-in-out infinite;
+        }
+        @keyframes qr-scan {
+            0%   { top: 0%;   opacity: 0; }
+            8%   { opacity: 1; }
+            92%  { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        /* corner accent */
+        #qr-box::before {
+            content: '';
+            position: absolute;
+            inset: 5px;
+            border: 2px solid transparent;
+            border-radius: 0.5rem;
+            background:
+                linear-gradient(#0a0a14,#0a0a14) padding-box,
+                linear-gradient(135deg,#FF8C42 0%,transparent 40%,transparent 60%,#2B6A7C 100%) border-box;
+            pointer-events: none;
+        }
+
+        #qr-track-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: #C5D633;
+            text-align: center;
+            max-width: 230px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+            text-shadow: 0 0 8px rgba(197,214,51,0.5);
+        }
+        .qr-hint-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            margin: 0;
+        }
+
+        /* signal bars */
+        .qr-signal {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 18px;
+        }
+        .qr-signal span {
+            width: 6px;
+            background: #2B6A7C;
+            border-radius: 2px;
+            animation: qr-sig 1.4s ease-in-out infinite;
+        }
+        .qr-signal span:nth-child(1) { height: 7px;  animation-delay: 0s;   }
+        .qr-signal span:nth-child(2) { height: 12px; animation-delay: 0.2s; }
+        .qr-signal span:nth-child(3) { height: 18px; animation-delay: 0.4s; }
+        @keyframes qr-sig {
+            0%,100% { background: #2B6A7C; }
+            50%     { background: #FF8C42; box-shadow: 0 0 7px #FF8C42; }
+        }
+
+        /* local-only warning */
+        #qr-local-warning {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.8rem;
+            border-radius: 0.8rem;
+            background: rgba(43,106,124,0.15);
+            border: 1px solid rgba(43,106,124,0.4);
+            text-align: center;
+        }
+        #qr-local-warning p {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.55);
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
@@ -132,31 +299,34 @@
                         <p class="empty-playlist">No GIFs loaded yet... Add some GIFs to the 'gifs' folder! 🎬</p>
                     </div>
                 </div>
-                
-                <!-- Lyrics Container -->
-                <div class="lyrics-container glass">
-                    <div class="lyrics-header">
-                        <h3 class="lyrics-title">★ LYRICS ★</h3>
-                        <div class="lyrics-actions">
-                            <button id="lyrics-preview" class="lyrics-toggle">
-                                <i class="material-icons">visibility</i>
-                                <span>Ver letra</span>
-                            </button>
-                            <button id="lyrics-toggle" class="lyrics-toggle">
-                                <i class="material-icons">mic</i>
-                                <span>Transcribir</span>
-                            </button>
+
+                <!-- ★ QR MOBILE DOWNLOAD ★ -->
+                <div class="qr-section glass">
+                    <p class="qr-section-title">★ SCAN TO DOWNLOAD ★</p>
+
+                    <!-- idle: no track loaded or local file -->
+                    <div id="qr-idle">
+                        <span class="qr-idle-icon">📱</span>
+                        <p>Reproduce una canción de YouTube<br>para generar el QR de descarga</p>
+                    </div>
+
+                    <!-- active: QR code + info -->
+                    <div id="qr-canvas-wrap">
+                        <div id="qr-box"></div>
+                        <p id="qr-track-label"></p>
+                        <p class="qr-hint-text">Apunta la cámara de tu celular 📲</p>
+                        <div class="qr-signal">
+                            <span></span><span></span><span></span>
                         </div>
                     </div>
-                    <div id="lyrics-content" class="lyrics-content">
-                        <p class="lyrics-content preview">Selecciona una canción para ver su letra</p>
-                    </div>
-                    <div class="lyrics-status">
-                        <div id="lyrics-status-dot" class="lyrics-status-dot"></div>
-                        <span id="lyrics-status-text">Inactivo</span>
+
+                    <!-- warning for localhost -->
+                    <div id="qr-local-warning">
+                        <p>⚠️ El servidor corre en <strong>localhost</strong>.<br>
+                        El celular no podrá acceder. Asegúrate de que tu PC y celular estén en el mismo Wi-Fi y que el servidor escuche en <code>0.0.0.0</code>.</p>
                     </div>
                 </div>
-                
+
                 <div id="gif-title" class="video-title" style="display: none;">
                     No GIF loaded
                 </div>
@@ -177,6 +347,81 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="script.js"></script>
     <script src="youtube-downloader.js"></script>
-    <script src="lyrics.js"></script>
+
+    <!-- ★ QR INLINE LOGIC ★ -->
+    <script>
+    (function () {
+        const SERVER = 'http://localhost:5000';
+        let lastTrackIndex = -1;
+
+        async function getNetworkBase() {
+            try {
+                const r = await fetch(SERVER + '/api/network-info', { signal: AbortSignal.timeout(2000) });
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d.local_ip && d.local_ip !== '127.0.0.1') return 'http://' + d.local_ip + ':5000';
+                }
+            } catch (_) {}
+            return null;
+        }
+
+        function renderQR(url, trackName) {
+            const box   = document.getElementById('qr-box');
+            const label = document.getElementById('qr-track-label');
+            const wrap  = document.getElementById('qr-canvas-wrap');
+            const idle  = document.getElementById('qr-idle');
+            const warn  = document.getElementById('qr-local-warning');
+
+            // clear previous QR
+            box.innerHTML = '';
+
+            new QRCode(box, {
+                text         : url,
+                width        : 200,
+                height       : 200,
+                colorDark    : '#FF8C42',
+                colorLight   : '#0a0a14',
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            label.textContent = trackName;
+            idle.style.display = 'none';
+            wrap.style.display = 'flex';
+
+            // show localhost warning if needed
+            const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+            warn.style.display = isLocal ? 'flex' : 'none';
+        }
+
+        function showIdle() {
+            document.getElementById('qr-idle').style.display       = 'flex';
+            document.getElementById('qr-canvas-wrap').style.display = 'none';
+            document.getElementById('qr-local-warning').style.display = 'none';
+        }
+
+        async function updateQR() {
+            const idx   = window.currentTrackIndex;
+            const track = window.playlist && window.playlist[idx];
+
+            if (!track || track.source !== 'downloaded') {
+                showIdle();
+                return;
+            }
+
+            // Only re-render when the track actually changes
+            if (idx === lastTrackIndex) return;
+            lastTrackIndex = idx;
+
+            const filename = track.url.split('/downloads/').pop();
+            const base     = await getNetworkBase() || SERVER;
+            const dlUrl    = base + '/downloads/' + filename;
+
+            renderQR(dlUrl, track.name);
+        }
+
+        // Poll for track changes
+        setInterval(updateQR, 600);
+    })();
+    </script>
 </body>
 </html>

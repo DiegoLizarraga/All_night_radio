@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from pytubefix import YouTube
 import os
+import socket
 from pathlib import Path
 import re
 import requests
@@ -32,6 +33,18 @@ DOWNLOAD_FOLDER.mkdir(exist_ok=True)
 def sanitize_filename(filename):
     """Cleans filename of invalid characters"""
     return re.sub(r'[<>:"/\\|?*]', '', filename)
+
+def get_local_ip():
+    """Gets the local IP address of the machine on the network"""
+    try:
+        # Connect to an external address to determine the outgoing interface
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
 
 def search_genius_song(title, artist=''):
     """Search song on Genius"""
@@ -98,8 +111,25 @@ def home():
             "/api/download-to-server": "POST - Download MP3 to server",
             "/api/files": "GET - List files in downloads",
             "/downloads/<filename>": "GET - Serve downloaded file",
-            "/api/lyrics": "GET - Get song lyrics"
+            "/api/lyrics": "GET - Get song lyrics",
+            "/api/network-info": "GET - Get server local IP for QR generation"
         }
+    })
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NEW: Network info endpoint — used by the QR generator to build the correct
+# local-network URL so phones on the same Wi-Fi can download the file.
+# ─────────────────────────────────────────────────────────────────────────────
+@app.route('/api/network-info', methods=['GET'])
+def network_info():
+    """Returns the local IP of the server so the frontend can build QR codes
+    that work for any device on the same Wi-Fi network."""
+    local_ip = get_local_ip()
+    return jsonify({
+        "success": True,
+        "local_ip": local_ip,
+        "server_url": f"http://{local_ip}:5000",
+        "note": "Use this URL to access the server from other devices on the same network"
     })
 
 @app.route('/api/info', methods=['GET'])
@@ -230,6 +260,8 @@ def serve_file(filename):
         response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         response.headers['Cache-Control'] = 'public, max-age=3600'
+        # Force download on mobile browsers
+        response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 404
@@ -296,10 +328,13 @@ def internal_error(e):
     return jsonify({"success": False, "error": "Internal server error"}), 500
 
 if __name__ == '__main__':
+    local_ip = get_local_ip()
     print("=" * 60)
     print("🚀 All Night Radio - Backend Server")
     print("=" * 60)
-    print(f"📡 Server: http://localhost:5000")
+    print(f"📡 Local:   http://localhost:5000")
+    print(f"📡 Network: http://{local_ip}:5000")
+    print(f"📱 QR codes will use: http://{local_ip}:5000")
     print(f"📁 Downloads folder: {DOWNLOAD_FOLDER.absolute()}")
     print("")
     print("📝 Available endpoints:")
@@ -308,5 +343,6 @@ if __name__ == '__main__':
     print("   • GET  /api/files")
     print("   • GET  /downloads/<filename>")
     print("   • GET  /api/lyrics?title=<song>&artist=<artist>")
+    print("   • GET  /api/network-info  ← NEW: for QR mobile download")
     print("=" * 60)
     app.run(debug=True, port=5000, host='0.0.0.0')
