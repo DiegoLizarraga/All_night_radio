@@ -1030,3 +1030,86 @@ body {
         height: 250px;
     }
 }
+
+/* ============================================
+   MASCOT ASSISTANT
+   ============================================ */
+#mascot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2500;
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+#mascot-img {
+    width: 120px;
+    height: auto;
+    cursor: pointer;
+    filter: drop-shadow(0 0 15px rgba(197, 214, 51, 0.4));
+    transition: transform 0.3s;
+    animation: mascot-float 3s ease-in-out infinite;
+}
+
+#mascot-img:hover {
+    transform: scale(1.1);
+}
+
+#mascot-speech-bubble {
+    width: 260px;
+    padding: 15px;
+    border-radius: 15px;
+    border-bottom-right-radius: 0;
+    font-size: 0.85rem;
+    transition: opacity 0.3s, transform 0.3s;
+    transform-origin: bottom right;
+    background: rgba(10, 10, 20, 0.85);
+    border: 1px solid #C5D633;
+    box-shadow: 0 0 20px rgba(197, 214, 51, 0.2);
+}
+
+#mascot-speech-bubble.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+}
+
+#mascot-text {
+    color: #fff;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.mascot-btn {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    font-size: 0.75rem;
+    color: #C5D633;
+    background: rgba(197, 214, 51, 0.1);
+    border: 1px solid rgba(197, 214, 51, 0.4);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    text-align: left;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.mascot-btn:hover {
+    background: rgba(197, 214, 51, 0.3);
+    color: #fff;
+}
+
+@keyframes mascot-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+@media (max-width: 768px) {
+    #mascot-img { width: 90px; }
+    #mascot-speech-bubble { width: 220px; font-size: 0.75rem; }
+}

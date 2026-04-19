@@ -1,267 +1,106 @@
+Aquí tienes el **README.md** actualizado con todas las nuevas funcionalidades, incluyendo el soporte para **Spotify** y la nueva **Mascota Asistente** que guiará a tus usuarios.
+
+---
+
 # ★ All Night Radio ★
 
 <div align="center">
 
-🎵 **Reproductor de música y descargador de YouTube a MP3** 🎵
+🎵 **Reproductor de música y descargador de YouTube/Spotify a MP3** 🎵
 
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 ![Python](https://img.shields.io/badge/python-3.7+-blue.svg)
 ![Flask](https://img.shields.io/badge/flask-3.0+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-
-
-
-
-
-https://github.com/user-attachments/assets/64d74306-d17d-482e-8aa1-2f77601bfff7
-
-
-
+[https://github.com/user-attachments/assets/64d74306-d17d-482e-8aa1-2f77601bfff7](https://github.com/user-attachments/assets/64d74306-d17d-482e-8aa1-2f77601bfff7)
 
 </div>
 
+## ✨ Características Novedosas
 
-## ✨ Características
- cambian automáticamente según el género musical
+### 🟢 Integración con Spotify
+- [cite_start]**Descarga de Tracks y Playlists**: Ahora puedes pegar enlaces de canciones o listas de reproducción completas de Spotify[cite: 1].
+- [cite_start]**Procesamiento Automático**: Utiliza un motor de búsqueda para localizar y descargar la mejor calidad disponible basándose en la metadata de Spotify[cite: 1].
 
-### 🎵 Reproductor Completo
-- **Controles básicos**: Play/Pause, Siguiente, Anterior
-- **Barra de progreso interactiva**: Haz clic para saltar a cualquier parte de la canción
-- **Control de volumen**: Slider con indicador visual
-- **Detección automática de género**: Identifica el género por el nombre del archivo
-- **Playlist dinámica**: Agrega y gestiona tus canciones fácilmente
+### 🤖 Mascota Asistente (Radio-chan)
+- [cite_start]**Guía Interactiva**: Una mascota basada en la imagen `radio.png` que ayuda a los nuevos usuarios a entender la aplicación[cite: 1].
+- [cite_start]**Preguntas Frecuentes**: Sistema de respuestas predeterminadas sobre descargas, uso de archivos locales, modo DJ y códigos QR[cite: 1].
+- [cite_start]**Interfaz Animada**: Animaciones de flotado y burbujas de texto estilo Y2K[cite: 1].
 
-### 📺 Descargador de YouTube a MP3
-- **Interfaz modal elegante**: Diseño integrado con el tema principal
-- **Vista previa del video**: Muestra thumbnail, título, autor y duración
-- **Descarga al servidor**: Guarda automáticamente en la carpeta `downloads/`
-- **Auto-carga**: Lee archivos existentes en `downloads/` al iniciar
-- **Conversión automática**: Usa ffmpeg para convertir a MP3 de alta calidad
-- **Barra de progreso animada**: Feedback visual durante la descarga
+---
 
-### 🎤 DJ Virtual
-- **Síntesis de voz**: Anuncia las canciones y cambios en el reproductor
-- **Comentarios automáticos**: Notificaciones habladas de las acciones
-- **Idioma español**: Configurado para hablar en español
+## 🎵 Funcionalidades Principales
 
-### 📻 Modo Radio
-- **Reproducción aleatoria**: Shuffle automático de tu playlist
-- **Transiciones automáticas**: Cambia de canción al terminar cada track
+### 📺 Descargador Multimedia
+- [cite_start]**YouTube a MP3**: Descarga videos individuales con vista previa de miniatura, autor y duración[cite: 1].
+- [cite_start]**Conversión de Alta Calidad**: Uso de `ffmpeg` para garantizar archivos MP3 a 192k[cite: 1].
+- [cite_start]**Descarga Móvil**: Generación de códigos QR automáticos para descargar tracks directamente al celular vía Wi-Fi local[cite: 1].
 
-### 🎧 Visualización de Audio
-- **Análisis en tiempo real**: Usa Web Audio API para analizar frecuencias
-- **Partículas reactivas**: Efectos visuales que responden a los bajos
-- **Formas animadas**: Círculos de fondo que cambian con la música
-- **Barras de frecuencia**: Visualización tipo ecualizador
+### 🎧 Experiencia de Audio Pro
+- [cite_start]**Visualizador en Tiempo Real**: Análisis de frecuencias con Web Audio API y partículas reactivas a los bajos[cite: 1].
+- [cite_start]**Letras Automáticas**: Integración con la API de Genius para mostrar letras mientras escuchas tus canciones[cite: 1].
+- [cite_start]**DJ Virtual**: Un asistente de voz que anuncia tracks y comenta tus acciones en español[cite: 1].
+- [cite_start]**Sistema de GIFs**: Pantalla de TV integrada que cambia de animaciones según el ritmo[cite: 1].
 
-### 📥 Gestión de Archivos
-- **Upload local**: Sube archivos MP3/WAV desde tu dispositivo
-- **Descarga de tracks**: Guarda canciones de tu playlist
-- **Organización automática**: Mantiene todo en la carpeta `downloads/`
-
-
+---
 
 ## 🔧 Requisitos
 
 ### Software Necesario
-
-- **Python 3.7+** - [Descargar Python](https://www.python.org/downloads/)
-- **pip** (incluido con Python)
-- **ffmpeg** (opcional, pero recomendado para mejor calidad)
-  - Windows: [Descargar FFmpeg](https://ffmpeg.org/download.html)
-  - macOS: `brew install ffmpeg`
-  - Linux: `sudo apt install ffmpeg`
+- **Python 3.7+**
+- **FFmpeg**: Necesario para la conversión de audio y descarga de Spotify.
+- [cite_start]**spotDL**: Motor para la gestión de enlaces de Spotify[cite: 1].
 
 ### Librerías Python
-
 ```bash
 flask>=3.0.0
 flask-cors>=4.0.0
 pytubefix>=6.0.0
+spotdl>=4.2.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
 ```
-
-### Navegador Web Moderno
-
-- Chrome 90+
-- Firefox 88+
-- Edge 90+
-- Safari 14+
 
 ---
 
-##  Instalación
+## 🚀 Instalación y Uso
 
-### 1. Clonar o descargar el proyecto
-
-```bash
-# Opción A: Clonar con git
-git clone https://github.com/tu-usuario/all-night-radio.git
-cd all-night-radio
-
-# Opción B: Descargar y descomprimir el ZIP
-# Luego navegar a la carpeta
-cd all-night-radio
-```
-
-### 2. Instalar dependencias de Python
-
-```bash
-pip install flask flask-cors pytubefix
-```
-
-O usando el archivo `requirements.txt`:
-
+### 1. Preparar el entorno
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. (Opcional) Instalar FFmpeg
-
-Para mejor calidad de audio:
-
-**Windows:**
-1. Descargar de [ffmpeg.org](https://ffmpeg.org/download.html)
-2. Extraer y agregar al PATH del sistema
-
-**macOS:**
-```bash
-brew install ffmpeg
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
-
----
-
-##  Uso
-
-### Iniciar el Servidor Backend
-
+### 2. Iniciar el servidor
 ```bash
 python app.py
 ```
 
-Deberías ver:
-```
-🚀 Servidor iniciado en http://localhost:5000
-📝 Endpoints disponibles:
-   - GET /api/info?url=<youtube_url>
-   - GET /api/download?url=<youtube_url>
-   - POST /api/download-to-server (JSON: {url: <youtube_url>})
-   - GET /api/files
-   - GET /downloads/<filename>
-   - POST /api/cleanup
-```
-
-### Abrir la Interfaz Web
-
-**Opción A: Abrir directamente**
-```bash
-# Simplemente abre index.html en tu navegador
-# (doble clic en el archivo)
-```
-
-**Opción B: Usar servidor local (recomendado para CORS)**
-```bash
-# Terminal 2 (nueva ventana)
-python -m http.server 8000
-
-# Luego abre en el navegador:
-# http://localhost:8000/index.html
-```
-
-### Usar la Aplicación
-
-1. **Subir archivos locales:**
-   - Clic en "Upload Local Files"
-   - Selecciona tus archivos MP3/WAV
-   - Se agregarán automáticamente a la playlist
-
-2. **Descargar de YouTube:**
-   - Clic en "📺 Download YouTube MP3"
-   - Pega la URL del video
-   - Clic en "Obtener información"
-   - Revisa la información y clic en "Descargar MP3"
-   - Se agregará automáticamente a la playlist
-
-3. **Reproducir música:**
-   - Clic en cualquier canción de la playlist
-   - Usa los controles de play/pause/siguiente/anterior
-   - Ajusta el volumen con el slider
-
-4. **Activar funciones especiales:**
-   - **📻 RADIO**: Activa reproducción aleatoria
-   - **🎤 DJ**: Activa anuncios de voz
+### 3. Endpoints de la API actualizados
+- [cite_start]`POST /api/download-spotify`: Maneja enlaces de tracks y playlists de Spotify[cite: 1].
+- [cite_start]`GET /api/network-info`: Provee la IP local para la sincronización con el celular[cite: 1].
+- [cite_start]`GET /api/lyrics`: Busca letras basadas en el título y artista[cite: 1].
 
 ---
 
-
-### Archivos Principales
-
-**`app.py`**
-- Servidor Flask con API REST
-- Maneja descarga y conversión de videos de YouTube
-- Sirve archivos MP3 con headers CORS correctos
-- Endpoints para listar y limpiar archivos
-
-**`index.html`**
-- Interfaz completa del reproductor
-- Visualizador de audio con Canvas
-- Controles de reproducción
-- Gestión de playlist
-
-**`youtube-downloader.js`**
-- Modal de descarga de YouTube
-- Integración con la API del backend
-- Auto-carga de archivos existentes
-- Sistema de notificaciones
+## 📂 Estructura del Proyecto
+- [cite_start]**`app.py`**: Servidor Flask con lógica para YouTube y Spotify[cite: 1].
+- [cite_start]**`mascot.js`**: Lógica del asistente interactivo y sus diálogos[cite: 1].
+- [cite_start]**`youtube-downloader.js`**: Gestor de descargas unificado (YT/Spotify)[cite: 1].
+- [cite_start]**`lyrics.js`**: Motor de búsqueda y renderizado de letras[cite: 1].
+- [cite_start]**`radio.png`**: Imagen de la mascota oficial de la aplicación[cite: 1].
 
 ---
 
 ## 🛠️ Tecnologías
-
-### Frontend
-- **HTML5** - Estructura
-- **CSS3** - Estilos y animaciones
-- **JavaScript (ES6+)** - Lógica y funcionalidad
-- **Web Audio API** - Visualización de audio
-- **Canvas API** - Gráficos y efectos
-- **YouTube IFrame API** - Reproductor de YouTube embebido
-
-### Backend
-- **Python 3.7+** - Lenguaje del servidor
-- **Flask** - Framework web
-- **Flask-CORS** - Manejo de Cross-Origin Resource Sharing
-- **pytubefix** - Descarga de videos de YouTube
-- **FFmpeg** - Conversión de audio (opcional)
-
-### Fuentes y Recursos
-- **Google Fonts**: Russo One, Orbitron, Bungee, ZCOOL KuaiLe
-- **Material Icons**: Iconos de la interfaz
+- [cite_start]**Backend**: Flask, PyTubeFix, spotDL, BeautifulSoup4[cite: 1].
+- [cite_start]**Frontend**: JavaScript ES6+, Canvas API (Visualizer), QRCode.js[cite: 1].
+- [cite_start]**Estilos**: CSS3 con animaciones Glitch y Glassmorphism[cite: 1].
 
 ---
 
+**Los desarrolladores no se hacen responsables del uso indebido de esta herramienta. Úsala bajo tu propia responsabilidad.**
 
-**Los desarrolladores de este proyecto NO se hacen responsables del uso indebido de esta herramienta.**
-
----
-
-
-## 🙏 Agradecimientos
-
-- **Jet Set Radio** - Por la inspiración visual a lo mejor luego los ponemos
-- **pytubefix** - Por hacer posible la descarga de YouTube
-- **Flask** - Por el excelente framework web
-- **Material Design** - Por los iconos
-- **Google Fonts** - Por las tipografías
-
----
-
-
-**⭐ Si te gusta este proyecto, dale una estrella en GitHub ⭐**
-
+<div align="center">
+🌟 <b>Coded with ♥ for Y2K vibes</b> 🌟
 </div>
