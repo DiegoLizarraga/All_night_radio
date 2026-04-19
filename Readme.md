@@ -1,5 +1,3 @@
-Aquí tienes el **README.md** actualizado con todas las nuevas funcionalidades, incluyendo el soporte para **Spotify** y la nueva **Mascota Asistente** que guiará a tus usuarios.
-
 ---
 
 # ★ All Night Radio ★
@@ -20,28 +18,28 @@ Aquí tienes el **README.md** actualizado con todas las nuevas funcionalidades, 
 ## ✨ Características Novedosas
 
 ### 🟢 Integración con Spotify
-- [cite_start]**Descarga de Tracks y Playlists**: Ahora puedes pegar enlaces de canciones o listas de reproducción completas de Spotify[cite: 1].
-- [cite_start]**Procesamiento Automático**: Utiliza un motor de búsqueda para localizar y descargar la mejor calidad disponible basándose en la metadata de Spotify[cite: 1].
+- []**Descarga de Tracks y Playlists**: Ahora puedes pegar enlaces de canciones o listas de reproducción completas de Spotify[cite: 1].
+- []**Procesamiento Automático**: Utiliza un motor de búsqueda para localizar y descargar la mejor calidad disponible basándose en la metadata de Spotify[cite: 1].
 
 ### 🤖 Mascota Asistente (Radio-chan)
-- [cite_start]**Guía Interactiva**: Una mascota basada en la imagen `radio.png` que ayuda a los nuevos usuarios a entender la aplicación[cite: 1].
-- [cite_start]**Preguntas Frecuentes**: Sistema de respuestas predeterminadas sobre descargas, uso de archivos locales, modo DJ y códigos QR[cite: 1].
-- [cite_start]**Interfaz Animada**: Animaciones de flotado y burbujas de texto estilo Y2K[cite: 1].
+- []**Guía Interactiva**: Una mascota basada en la imagen `radio.png` que ayuda a los nuevos usuarios a entender la aplicación[cite: 1].
+- []**Preguntas Frecuentes**: Sistema de respuestas predeterminadas sobre descargas, uso de archivos locales, modo DJ y códigos QR[cite: 1].
+- []**Interfaz Animada**: Animaciones de flotado y burbujas de texto estilo Y2K[cite: 1].
 
 ---
 
 ## 🎵 Funcionalidades Principales
 
 ### 📺 Descargador Multimedia
-- [cite_start]**YouTube a MP3**: Descarga videos individuales con vista previa de miniatura, autor y duración[cite: 1].
-- [cite_start]**Conversión de Alta Calidad**: Uso de `ffmpeg` para garantizar archivos MP3 a 192k[cite: 1].
-- [cite_start]**Descarga Móvil**: Generación de códigos QR automáticos para descargar tracks directamente al celular vía Wi-Fi local[cite: 1].
+- []**YouTube a MP3**: Descarga videos individuales con vista previa de miniatura, autor y duración[cite: 1].
+- []**Conversión de Alta Calidad**: Uso de `ffmpeg` para garantizar archivos MP3 a 192k[cite: 1].
+- []**Descarga Móvil**: Generación de códigos QR automáticos para descargar tracks directamente al celular vía Wi-Fi local[cite: 1].
 
 ### 🎧 Experiencia de Audio Pro
-- [cite_start]**Visualizador en Tiempo Real**: Análisis de frecuencias con Web Audio API y partículas reactivas a los bajos[cite: 1].
-- [cite_start]**Letras Automáticas**: Integración con la API de Genius para mostrar letras mientras escuchas tus canciones[cite: 1].
-- [cite_start]**DJ Virtual**: Un asistente de voz que anuncia tracks y comenta tus acciones en español[cite: 1].
-- [cite_start]**Sistema de GIFs**: Pantalla de TV integrada que cambia de animaciones según el ritmo[cite: 1].
+- []**Visualizador en Tiempo Real**: Análisis de frecuencias con Web Audio API y partículas reactivas a los bajos[cite: 1].
+- []**Letras Automáticas**: Integración con la API de Genius para mostrar letras mientras escuchas tus canciones[cite: 1].
+- []**DJ Virtual**: Un asistente de voz que anuncia tracks y comenta tus acciones en español[cite: 1].
+- []**Sistema de GIFs**: Pantalla de TV integrada que cambia de animaciones según el ritmo[cite: 1].
 
 ---
 
@@ -50,7 +48,7 @@ Aquí tienes el **README.md** actualizado con todas las nuevas funcionalidades, 
 ### Software Necesario
 - **Python 3.7+**
 - **FFmpeg**: Necesario para la conversión de audio y descarga de Spotify.
-- [cite_start]**spotDL**: Motor para la gestión de enlaces de Spotify[cite: 1].
+- []**spotDL**: Motor para la gestión de enlaces de Spotify[cite: 1].
 
 ### Librerías Python
 ```bash
@@ -77,27 +75,30 @@ python app.py
 ```
 
 ### 3. Endpoints de la API actualizados
-- [cite_start]`POST /api/download-spotify`: Maneja enlaces de tracks y playlists de Spotify[cite: 1].
-- [cite_start]`GET /api/network-info`: Provee la IP local para la sincronización con el celular[cite: 1].
-- [cite_start]`GET /api/lyrics`: Busca letras basadas en el título y artista[cite: 1].
+- []`POST /api/download-spotify`: Maneja enlaces de tracks y playlists de Spotify[cite: 1].
+- []`GET /api/network-info`: Provee la IP local para la sincronización con el celular[cite: 1].
+- []`GET /api/lyrics`: Busca letras basadas en el título y artista[cite: 1].
 
 ---
 
 ## 📂 Estructura del Proyecto
-- [cite_start]**`app.py`**: Servidor Flask con lógica para YouTube y Spotify[cite: 1].
-- [cite_start]**`mascot.js`**: Lógica del asistente interactivo y sus diálogos[cite: 1].
-- [cite_start]**`youtube-downloader.js`**: Gestor de descargas unificado (YT/Spotify)[cite: 1].
-- [cite_start]**`lyrics.js`**: Motor de búsqueda y renderizado de letras[cite: 1].
-- [cite_start]**`radio.png`**: Imagen de la mascota oficial de la aplicación[cite: 1].
+- []**`app.py`**: Servidor Flask con lógica para YouTube y Spotify[cite: 1].
+- []**`mascot.js`**: Lógica del asistente interactivo y sus diálogos[cite: 1].
+- []**`youtube-downloader.js`**: Gestor de descargas unificado (YT/Spotify)[cite: 1].
+- []**`lyrics.js`**: Motor de búsqueda y renderizado de letras[cite: 1].
+- []**`radio.png`**: Imagen de la mascota oficial de la aplicación[cite: 1].
 
 ---
 
 ## 🛠️ Tecnologías
-- [cite_start]**Backend**: Flask, PyTubeFix, spotDL, BeautifulSoup4[cite: 1].
-- [cite_start]**Frontend**: JavaScript ES6+, Canvas API (Visualizer), QRCode.js[cite: 1].
-- [cite_start]**Estilos**: CSS3 con animaciones Glitch y Glassmorphism[cite: 1].
+- []**Backend**: Flask, PyTubeFix, spotDL, BeautifulSoup4[cite: 1].
+- []**Frontend**: JavaScript ES6+, Canvas API (Visualizer), QRCode.js[cite: 1].
+- []**Estilos**: CSS3 con animaciones Glitch y Glassmorphism[cite: 1].
 
 ---
+
+
+
 
 **Los desarrolladores no se hacen responsables del uso indebido de esta herramienta. Úsala bajo tu propia responsabilidad.**
 
